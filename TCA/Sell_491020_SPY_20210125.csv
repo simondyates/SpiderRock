@@ -1,0 +1,13 @@
+,Maker,Taker,Total,Desc
+Child Orders,        15,"     1,228","     1,243",Number of child orders which had fills
+Avg Child Size,"     2,910",       415,       445,Avg size of child orders which had fills
+Filled Contracts,"     5,481","   485,539","   491,020",Total number of contracts filled
+Contract Fill Rate,       13%,       95%,       89%,Filled Contracts divided by total size sent by child orders which had fills
+Fill Pct Spread,     5.05%,     0.13%,     0.18%,Quantity-weighted average of fill price in spread units: 0 = on bid; 1 = on offer
+Exec Px,    382.41,    382.91,    382.90,Average filled price
+Px Range,      3.30,      3.36,      3.36,High minus low fill price
+Arr Slip Mid Px,     -1.83,     -1.33,     -1.34,Amount by which Exec Px was more favorable than mid at order creation
+Arr Slip Mid USD,"   -10,021","  -647,921","  -657,942",Above field * contracts filled * contract multiplier
+Eq Weighted Mid Px,    382.39,    382.82,    382.81,A really poor proxy for VWAP. Sampled at fill times only
+Slip to EqW Mid Px,      0.02,      0.09,      0.09,Amount by which Exec Px was more favorable than the above price
+Slip to EqW Mid USD,       108,"    43,201","    46,400",Above field * contracts filled * contract multiplier

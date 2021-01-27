@@ -1,40 +1,16 @@
 # TO DO: pull in info from brkrState table (if available)
-# Move up the Fill Pct Spread row and its formatting
-# Correct bug of using fills_df in place of df when populating maker/taker results
 
 import pandas as pd
+from collections import namedtuple
+from SRUtils import format_df, make_title
 
-def filter_cols(df):
-    # msgsprdparentexecution has 244 columns.  Let's filter to just the ones we need
-    keep_cols = ['parentNumber', 'baseParentNumber', 'clOrdId', 'secKey_tk', 'secKey_yr',
-            'secKey_mn', 'secKey_dy', 'secKey_xx', 'secKey_cp', 'secType',
-            'orderSide', 'childSize', 'childPrice', 'childDttm', 'childMakerTaker',
-            'childUBid', 'childUAsk', 'childBid', 'childAsk', 'childMark',
-            'childVol', 'childProb', 'childMktStance', 'childMethod',
-            'fillTransactDttm', 'fillExchFee', 'fillPrice', 'fillQuantity', 'fillBid',
-            'fillAsk', 'fillMark', 'fillUMark', 'fillUBid', 'fillUAsk',
-            'fillVolAtm', 'fillMark1M', 'fillMark10M', 'fillBid1M', 'fillAsk1M',
-            'fillBid10M', 'fillAsk10M', 'fillUMark1M', 'fillUMark10M', 'fillVolAtm1M',
-            'fillVolAtm10M', 'fillVol', 'fillProb', 'fillLimitRefUPrc', 'fillVe',
-            'fillGa', 'fillDe', 'fillTh', 'parentDttm', 'parentUBid',
-            'parentUAsk', 'parentUMark', 'parentBid', 'parentAsk', 'parentMark',
-            'autoHedge']
-    df.drop([c for c in df.columns if c not in keep_cols], axis=1, inplace=True)
-
-
-def round_price_cols(df):
-    # Deal with apparent float precision issues to return true penny prices
-    round_cols = [col for col in df.columns if df[col].dtype=='float64']
-    round_cols = [col for col in round_cols if ('Vol' not in col) and ('Prob' not in col) and ('Mark' not in col)]
-    for col in round_cols:
-        df[col] = df[col].apply(lambda x: round(x, 2))
-
-
-def calc_option_TCA_metrics(df):
+def calc_option_TCA_metrics(df, qwap_mark=None, qwap_Umark=None, formatted=True):
     # Returns a dataframe of TCA metrics for making and taking algos separately
-    # This **only** handles df's representing a single underlying with a single trade side
+    # This **only** handles a df representing a single underlying with a single trade side
+    # qwap_mark is for primary instrument and qwap_Umark is for underlying
 
     # Convert SR's string time fields and convert to tz-aware Timestamps, adding in micros if available
+    # THIS IS UNNECESSARY
     time_cols = [col for col in df.columns if ('Dttm' in col) and ('_us' not in col)]
     for col in time_cols:
         df[col] = df[col].apply(pd.to_datetime)
@@ -69,7 +45,6 @@ def calc_option_TCA_metrics(df):
         df['fillCalcVolBid'] = arrival_mid_vol + (df['fillDAdjBid'] - arrival_mid) / (100 * vega)
         df['fillCalcVolAsk'] = arrival_mid_vol + (df['fillDAdjAsk'] - arrival_mid) / (100 * vega)
         df['fillCalcVolMark'] = arrival_mid_vol + (df['fillDAdjMark'] - arrival_mid) / (100 * vega)
-    fills_df = df[df['fillQuantity'] > 0]
 
     # Fudge the contract multiplier rather than looking it up properly
     if df['secType'].iloc[0] == 'Option':
@@ -79,22 +54,48 @@ def calc_option_TCA_metrics(df):
 
     # Prepare to populate TCA results
     cols = ['Maker', 'Taker', 'Total', 'Desc']
-    rows = ['Child Orders', 'Avg Child Size', 'Filled Contracts',
-       'Contract Fill Rate', 'Px Range', 'Exec Px', 'Arr Slip Mid Px',
-       'Arr Slip Mid USD', 'Arr Slip Mark Px', 'Arr Slip Mark USD',
-       'Eq Weighted Mid Px', 'Slip to EqW Mid Px', 'Slip to EqW Mid USD',
-       'Eq Weighted Mark Px', 'Slip to EqW Mark Px', 'Slip to EqW Mark USD',
-       'DAdj Px Range', 'Exec DAdj Px', 'Arr Slip Mid DAdj Px',
-       'Arr Slip Mid DAdj USD', 'Arr Slip Mark DAdj Px',
-       'Arr Slip Mark DAdj USD', 'Eq Weighted Mid DAdj Px',
-       'Slip to EqW Mid DAdj Px', 'Slip to EqW Mid DAdj USD',
-       'Eq Weighted Mark DAdj Px', 'Slip to EqW Mark DAdj Px',
-       'Slip to EqW Mark DAdj USD', 'Vol Range', 'Exec Vol',
-       'Arr Slip Mid Vol', 'Arr Slip Mid Vol USD', 'Arr Slip Mark Vol',
-       'Arr Slip Mark Vol USD', 'Eq Weighted Mid Vol', 'Slip to EqW Mid Vol',
-       'Slip to EqW Mid Vol USD', 'Eq Weighted Mark Vol',
-       'Slip to EqW Mark Vol', 'Slip to EqW Mark Vol USD', 'Fill Pct Spread']
-    results = pd.DataFrame(index = rows, columns = cols)
+    field = namedtuple('field', ('format', 'desc'))
+    comma = '{:>10,.0f}'
+    price = '{:>10.2f}'
+    pct0 = '{:>10.0%}'
+    pct2 = '{:>10.2%}'
+    rows_dict = {'Child Orders': field(comma, 'Number of child orders which had fills'),
+                 'Avg Child Size': field(comma, 'Avg size of child orders which had fills'),
+                 'Filled Contracts': field(comma, 'Total number of contracts filled'),
+                 'Contract Fill Rate': field(pct0, 'Filled Contracts divided by total size sent by child orders which had fills'),
+                 'Fill Pct Spread': field(pct2, 'Quantity-weighted average of fill price in spread units at time of fill: 0 = on bid; 1 = on offer'),
+                 'Arrival Mid': field(price, 'Mid at order creation'),
+                 'Arrival Mark': field(price, 'SR Mark at order creation'),
+                 'Arrival U/L Mid': field(price, 'Mid of underlying at order creation'),
+                 'Exec Px': field(price, 'Average filled price'),
+                 'Px Range': field(price, 'High minus low fill price'),
+                 'Arr Slip Mid Px': field(price, 'Amount by which Exec Px was more favorable than mid at order creation'),
+                 'Arr Slip Mid USD': field(comma, 'Above field * contracts filled * contract multiplier'),
+                 'Arr Slip Mark Px': field(price, 'Amount by which Exec Px was more favorable than SR mark at order creation'),
+                 'Arr Slip Mark USD': field(comma, 'Above field * contracts filled * contract multiplier'),
+                 'QWAP Px': field(price, 'SR-calculated QWAP'),
+                 'Slip to QWAP Px': field(price, 'Amount by which Exec Px was more favorable than the above price'),
+                 'Slip to QWAP USD': field(comma, 'Above field * contracts filled * contract multiplier'),
+                 'Exec DAdj Px': field(price, 'Average of option fills delta-adjusted back to arrival mid price'),
+                 'DAdj Px Range': field(price, 'High minus low delta-adjuisted fill price'),
+                 'Arr Slip Mid DAdj Px': field(price, 'Amount by which Exec DAdj Px was more favorable than mid at order creation'),
+                 'Arr Slip Mid DAdj USD': field(comma, 'Above field * contracts filled * contract multiplier'),
+                 'Arr Slip Mark DAdj Px': field(price, 'Amount by which Exec DAdj Px was more favorable than SR mark at order creation'),
+                 'Arr Slip Mark DAdj USD': field(comma, 'Above field * contracts filled * contract multiplier'),
+                 'Exec DAdj QWAP Px': field(price, 'Exec Px - delta * (fill-weighted avg u/l px - u/l QWAP price)'),
+                 'Slip to Exec DAdj QWAP Px': field(price, 'Amount by which Exec DAdj QWAP Px was more favorable than the above price'),
+                 'Slip to Exec DAdj QWAP USD': field(comma, 'Above field * contracts filled * contract multiplier'),
+                 'Exec Vol': field(pct2, 'Implied volatility of Exec DAdj Px at arrival mid price'),
+                 'Vol Range': field(pct2, 'All vol fields below correspond to the DAdj fields above, but expressed in vols'),
+                 'Arr Slip Mid Vol': field(pct2, ''),
+                 'Arr Slip Mid Vol USD': field(comma, ''),
+                 'Arr Slip Mark Vol': field(pct2, ''),
+                 'Arr Slip Mark Vol USD': field(comma, ''),
+                 'QWAP Vol': field(pct2, ''),
+                 'Slip to QWAP Vol': field(pct2, ''),
+                 'Slip to QWAP Vol USD': field(comma, '')}
+
+    results = pd.DataFrame(index = rows_dict.keys(), columns = cols)
     make_df = df[df['childMakerTaker']=='Maker']
     take_df = df[df['childMakerTaker'] == 'Taker']
 
@@ -104,6 +105,7 @@ def calc_option_TCA_metrics(df):
         side = -1
 
     def populate_rows(df, col):
+        fills_df = df[df['fillQuantity'] > 0]
         # Overall stats
         results.loc['Child Orders', col] = df['clOrdId'].unique().shape[0]
         results.loc['Avg Child Size', col] = df.groupby('clOrdId').first()['childSize'].sum() / results.loc['Child Orders', col]
@@ -113,6 +115,9 @@ def calc_option_TCA_metrics(df):
         results.loc['Fill Pct Spread', col] = ((fills_df['fillPrice'] - fills_df['fillBid']) / (
                     fills_df['fillAsk'] - fills_df['fillBid'])
                                                * fills_df['fillQuantity']).sum() / fills_df['fillQuantity'].sum()
+        results.loc['Arrival Mid', col] = arrival_mid
+        results.loc['Arrival Mark', col] = arrival_mark
+        results.loc['Arrival U/L Mid', col] = arrival_ul_mid
         # Basic arrival slippage
         results.loc['Px Range', col] = df['fillPrice'].max() - df['fillPrice'].min()
         results.loc['Exec Px', col] = (df['fillPrice'] * df['fillQuantity']).sum() / df['fillQuantity'].sum()
@@ -122,31 +127,26 @@ def calc_option_TCA_metrics(df):
             results.loc['Arr Slip Mark Px', col] = side * (arrival_mark - results.loc['Exec Px', col])
             results.loc['Arr Slip Mark USD', col] = results.loc['Arr Slip Mark Px', col] * results.loc['Filled Contracts', col] * mult
 
-        # Proxy for slippage to VWAP
-        results.loc['Eq Weighted Mid Px', col] = ((fills_df['fillBid'] + fills_df['fillAsk'])/2).mean()
-        # This is a *VERY* poor proxy for VWAP since it's sampled on fills.  I need to get access to historical time&sales data ...
-        results.loc['Slip to EqW Mid Px', col] = side * (results.loc['Eq Weighted Mid Px', col] - results.loc['Exec Px', col])
-        results.loc['Slip to EqW Mid USD', col] = results.loc['Slip to EqW Mid Px', col] * results.loc['Filled Contracts', col] * mult
-        if delta != 0:
-            results.loc['Eq Weighted Mark Px', col] = fills_df['fillMark'].mean()
-            results.loc['Slip to EqW Mark Px', col] = side * (results.loc['Eq Weighted Mark Px', col] - results.loc['Exec Px', col])
-            results.loc['Slip to EqW Mark USD', col] = results.loc['Slip to EqW Mark Px', col] * results.loc['Filled Contracts', col] * mult
+        # QWAP slippage
+        if qwap_mark is not None:
+            results.loc['QWAP Px', col] = qwap_mark
+            results.loc['Slip to QWAP Px', col] = side * (results.loc['QWAP Px', col] - results.loc['Exec Px', col])
+            results.loc['Slip to QWAP USD', col] = results.loc['Slip to QWAP Px', col] * results.loc['Filled Contracts', col] * mult
 
         # Show delta-adjusted and vol versions of above
         if delta != 0:
-            # Delta-adjusted
+            # Delta-adjusted Arrival
             results.loc['DAdj Px Range', col] = fills_df['fillDAdjPrice'].max() - fills_df['fillDAdjPrice'].min()
             results.loc['Exec DAdj Px', col] = (df['fillDAdjPrice'] * df['fillQuantity']).sum() / df['fillQuantity'].sum()
             results.loc['Arr Slip Mid DAdj Px', col] = side * (arrival_mid - results.loc['Exec DAdj Px', col])
             results.loc['Arr Slip Mid DAdj USD', col] = side * results.loc['Arr Slip Mid DAdj Px', col] * results.loc['Filled Contracts', col] * mult
             results.loc['Arr Slip Mark DAdj Px', col] = side * (arrival_mark - results.loc['Exec DAdj Px', col])
             results.loc['Arr Slip Mark DAdj USD', col] = side * results.loc['Arr Slip Mark DAdj Px', col] * results.loc['Filled Contracts', col] * mult
-            results.loc['Eq Weighted Mid DAdj Px', col] = ((fills_df['fillDAdjBid'] + fills_df['fillDAdjAsk'])/2).mean()
-            results.loc['Slip to EqW Mid DAdj Px', col] = side * (results.loc['Eq Weighted Mid DAdj Px', col] - results.loc['Exec DAdj Px', col])
-            results.loc['Slip to EqW Mid DAdj USD', col] = results.loc['Slip to EqW Mid DAdj Px', col] * results.loc['Filled Contracts', col] * mult
-            results.loc['Eq Weighted Mark DAdj Px', col] = fills_df['fillDAdjMark'].mean()
-            results.loc['Slip to EqW Mark DAdj Px', col] = side * (results.loc['Eq Weighted Mark DAdj Px', col] - results.loc['Exec DAdj Px', col])
-            results.loc['Slip to EqW Mark DAdj USD', col] = results.loc['Slip to EqW Mark DAdj Px', col] * results.loc['Filled Contracts', col] * mult
+            # Delta-adjusted QWAP
+            fill_Umark = ((df['fillUBid'] + df['fillUAsk']) * df['fillQuantity']).sum() / (2 * df['fillQuantity'].sum())
+            results.loc['Exec DAdj QWAP Px', col] = results.loc['Exec Px', col] - delta * (fill_Umark - qwap_Umark)
+            results.loc['Slip to Exec DAdj QWAP Px', col] = side * (qwap_mark - results.loc['Exec DAdj QWAP Px', col])
+            results.loc['Slip to Exec DAdj QWAP USD', col] = results.loc['Slip to Exec DAdj QWAP Px', col] * results.loc['Filled Contracts', col] * mult
             # Vol
             results.loc['Vol Range', col] = fills_df['fillCalcVol'].max() - fills_df['fillCalcVol'].min()
             results.loc['Exec Vol', col] = (df['fillCalcVol'] * df['fillQuantity']).sum() / df['fillQuantity'].sum()
@@ -155,12 +155,9 @@ def calc_option_TCA_metrics(df):
             # Vol USD fields will differ slightly from DAdjUSD due to gamma if using SR Vols but will exactly match with CalcVol
             results.loc['Arr Slip Mark Vol', col] = side * (arrival_mark_vol - results.loc['Exec Vol', col])
             results.loc['Arr Slip Mark Vol USD', col] = results.loc['Arr Slip Mark Vol', col] * vega * results.loc['Filled Contracts', col] * 100 * mult
-            results.loc['Eq Weighted Mid Vol', col] = ((fills_df['fillCalcVolBid'] + fills_df['fillCalcVolAsk'])/2).mean()
-            results.loc['Slip to EqW Mid Vol', col] = side * (results.loc['Eq Weighted Mid Vol', col] - results.loc['Exec Vol', col])
-            results.loc['Slip to EqW Mid Vol USD', col] = results.loc['Slip to EqW Mid Vol', col] * vega * results.loc['Filled Contracts', col] * 100 * mult
-            results.loc['Eq Weighted Mark Vol', col] = fills_df['fillCalcVolMark'].mean()
-            results.loc['Slip to EqW Mark Vol', col] = side * (results.loc['Eq Weighted Mark Vol', col] - results.loc['Exec Vol', col])
-            results.loc['Slip to EqW Mark Vol USD', col] = results.loc['Slip to EqW Mark Vol', col] * vega * results.loc['Filled Contracts', col] * 100 * mult
+            results.loc['QWAP Vol', col] = results.loc['Exec Vol', col] - results.loc['Slip to Exec DAdj QWAP Px', col] / (100 * vega)
+            results.loc['Slip to QWAP Vol', col] = side * (results.loc['Exec Vol', col] - results.loc['QWAP Vol', col])
+            results.loc['Slip to QWAP Vol USD', col] = results.loc['Slip to QWAP Vol', col] * vega * results.loc['Filled Contracts', col] * 100 * mult
 
     if make_df['fillQuantity'].sum() > 0:
         populate_rows(make_df, 'Maker')
@@ -177,59 +174,31 @@ def calc_option_TCA_metrics(df):
     else:
         results['Total'] = 0
 
-    # Add descriptions where appropriate
-    results.loc['Child Orders', 'Desc'] = 'Number of child orders that resulted in a fill'
-    results.loc['Exec Px', 'Desc'] = 'Ctr-weighted avg fill price'
-    results.loc['Fill Pct Spread', 'Desc'] = 'Ctr-weighted avg of [fill vs spread] at fill time.  0 means on bid, 1 means on offer'
-    # Fill empty descriptions
-    results.loc[results['Desc'].isna(), 'Desc'] = ''
+    # Add descriptions
+    for key in rows_dict.keys():
+        results.loc[key, 'Desc'] = rows_dict[key].desc
+
+    # Add formatting
+    if formatted:
+        format_dict = {key: rows_dict[key].format for key in rows_dict.keys()}
+        results = format_df(results, format_dict)
     return results
 
-def row_format_df(df, rowformats):
-    out_df = pd.DataFrame(index=df.index, columns=df.columns)
-    for i in range(len(df.index)):
-        for j in range(len(df.columns)):
-            if (type(df.iloc[i, j]) is str) or (pd.isna(df.iloc[i, j])):
-                out_df.iloc[i, j] = df.iloc[i, j]
-            else:
-                out_df.iloc[i, j] = rowformats[i].format(df.iloc[i, j])
-    out_df = out_df[out_df.notna().all(axis=1)]
-    return out_df
-
-def make_title(df):
-    title1 = f"{df['orderSide'].iloc[0]}_{results.loc['Filled Contracts', 'Total']}_{df['secKey_tk'].iloc[0]}_"
-    title2 = f"{df['secKey_yr'].iloc[0]}{df['secKey_mn'].iloc[0]:02}{df['secKey_dy'].iloc[0]}_"
-    title3 = f"{df['secKey_xx'].iloc[0]} {df['secKey_cp'].iloc[0]}_"
-    title4 = f"{df['parentDttm'].iloc[0]:%Y%m%d}"
-    if df['secKey_mn'].iloc[0] > 0:
-        title = title1 + title2 + title3 + title4
-    else:
-        title = title1 + title4
-    return title
-
 if __name__ == '__main__':
-    execs = pd.read_csv('~/Dropbox/Element/FillData/TradesJan25.csv')
+    execs = pd.read_csv('./FillData/TradesJan25.csv')
     parents = execs['baseParentNumber'].unique()
-    execs = execs[execs['baseParentNumber'] == parents[1]]
-    results = calc_option_TCA_metrics(execs)
-    
-    # Make the results readable
-    comma = '{:>10,.0f}'
-    price = '{:>10.2f}'
-    pct = '{:>10.2%}'
-    rowformats = [comma, comma, comma, pct, price,
-                  price, price, comma, price, comma,
-                  price, price, comma, price, price,
-                  comma, price, price, price, comma,
-                  price, comma, price, price, comma,
-                  price, price, comma, pct, pct,
-                  pct, comma, pct, comma, pct, pct,
-                  comma, pct, pct, comma, pct]
-    pretty_df= row_format_df(results, rowformats)
-    title = make_title(execs)
-
+    execs = execs[execs['baseParentNumber'] == parents[0]]
+    brkr = pd.read_csv('./FillData/BrkrStateJan26.csv')
+    brkr = brkr[brkr['baseParentNumber'] == parents[0]]
+    if brkr.shape[0] > 0:
+        qwap_mark = brkr.loc[brkr.index[0], 'brokerQwapMark']
+        qwap_Umark = brkr.loc[brkr.index[0], 'brokerQwapUMark']
+    else:
+        qwap_mark = qwap_Umark = None
+    results = calc_option_TCA_metrics(execs, qwap_mark, qwap_Umark)
     # Save to csv
-    pretty_df.to_csv(f'~/Dropbox/Element/TCA/{title}.csv')
+    title = make_title(execs)
+    results.to_csv(f'./TCA/{title}.csv')
     
     
 

@@ -1,0 +1,36 @@
+,Maker,Taker,Total,Desc
+Child Orders,         0,       303,       303,Number of child orders which had fills
+Avg Child Size,         0,        20,        20,Avg size of child orders which had fills
+Filled Contracts,         0,"     1,000","     1,000",Total number of contracts filled
+Contract Fill Rate,        0%,       17%,       17%,Filled Contracts divided by total size sent by child orders which had fills
+Fill Pct Spread,     0.00%,   100.00%,   100.00%,Quantity-weighted average of fill price in spread units at time of fill: 0 = on bid; 1 = on offer
+Arrival Mid,      0.00,    109.55,    109.55,Mid at order creation
+Arrival Mark,      0.00,    109.49,    109.49,SR Mark at order creation
+Arrival U/L Mid,      0.00,   3854.86,   3854.86,Mid of underlying at order creation
+Exec Px,      0.00,    105.51,    105.51,Average filled price
+Px Range,      0.00,     14.50,     14.50,High minus low fill price
+Arr Slip Mid Px,      0.00,      4.04,      4.04,Amount by which Exec Px was more favorable than mid at order creation
+Arr Slip Mid USD,         0,"   404,030","   404,030",Above field * contracts filled * contract multiplier
+Arr Slip Mark Px,      0.00,      3.98,      3.98,Amount by which Exec Px was more favorable than SR mark at order creation
+Arr Slip Mark USD,         0,"   397,989","   397,989",Above field * contracts filled * contract multiplier
+QWAP Px,      0.00,    105.86,    105.86,SR-calculated QWAP
+Slip to QWAP Px,      0.00,      0.35,      0.35,Amount by which Exec Px was more favorable than the above price
+Slip to QWAP USD,         0,"    35,030","    35,030",Above field * contracts filled * contract multiplier
+Exec DAdj Px,      0.00,    112.77,    112.77,Average of option fills delta-adjusted back to arrival mid price
+DAdj Px Range,      0.00,      5.14,      5.14,High minus low delta-adjuisted fill price
+Arr Slip Mid DAdj Px,      0.00,     -3.22,     -3.22,Amount by which Exec DAdj Px was more favorable than mid at order creation
+Arr Slip Mid DAdj USD,         0,"  -321,917","  -321,917",Above field * contracts filled * contract multiplier
+Arr Slip Mark DAdj Px,      0.00,     -3.28,     -3.28,Amount by which Exec DAdj Px was more favorable than SR mark at order creation
+Arr Slip Mark DAdj USD,         0,"  -327,957","  -327,957",Above field * contracts filled * contract multiplier
+Exec DAdj QWAP Px,      0.00,    105.82,    105.82,Exec Px - delta * (fill-weighted avg u/l px - u/l QWAP price)
+Slip to Exec DAdj QWAP Px,      0.00,      0.04,      0.04,Amount by which Exec DAdj QWAP Px was more favorable than the above price
+Slip to Exec DAdj QWAP USD,         0,"     4,197","     4,197",Above field * contracts filled * contract multiplier
+Exec Vol,     0.00%,    19.18%,    19.18%,Implied volatility of Exec DAdj Px at arrival mid price
+Vol Range,     0.00%,     0.86%,     0.86%,"All vol fields below correspond to the DAdj fields above, but expressed in vols"
+Arr Slip Mid Vol,     0.00%,    -0.54%,    -0.54%,
+Arr Slip Mid Vol USD,         0,"  -321,917","  -321,917",
+Arr Slip Mark Vol,     0.00%,    -0.55%,    -0.55%,
+Arr Slip Mark Vol USD,         0,"  -327,957","  -327,957",
+QWAP Vol,     0.00%,    19.17%,    19.17%,
+Slip to QWAP Vol,     0.00%,     0.01%,     0.01%,
+Slip to QWAP Vol USD,         0,"     4,197","     4,197",

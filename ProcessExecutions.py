@@ -1,3 +1,7 @@
+# TO DO: pull in info from brkrState table (if available)
+# Move up the Fill Pct Spread row and its formatting
+# Correct bug of using fills_df in place of df when populating maker/taker results
+
 import pandas as pd
 
 def filter_cols(df):
@@ -24,7 +28,7 @@ def round_price_cols(df):
     round_cols = [col for col in round_cols if ('Vol' not in col) and ('Prob' not in col) and ('Mark' not in col)]
     for col in round_cols:
         df[col] = df[col].apply(lambda x: round(x, 2))
-        
+
 
 def calc_option_TCA_metrics(df):
     # Returns a dataframe of TCA metrics for making and taking algos separately
@@ -44,30 +48,53 @@ def calc_option_TCA_metrics(df):
     # Add a column to df representing the fill price delta-adjusted back to arrival_ul_mid
     # This could be improved by incorporating a gamma adjustment
     arrival_ul_mid = (df.loc[df.index[0], 'parentUBid'] + df.loc[df.index[0], 'parentUAsk']) / 2
-    delta = df[df['fillQuantity']>0]['fillDe'][0] # This implicitly assumes all our executions are in the same contract
-    df['fillUMid'] = (df['fillUBid'] + df['fillUBid'])/2
-    df['fillDAdjPrice'] = df['fillPrice'] - delta * (df['fillUMid'] - arrival_ul_mid)
-    df['fillDAdjBid'] = df['fillBid'] - delta * (df['fillUMid'] - arrival_ul_mid)
-    df['fillDAdjAsk'] = df['fillAsk'] - delta * (df['fillUMid'] - arrival_ul_mid)
-    df['fillDAdjMark'] = df['fillMark'] - delta * (df['fillUMid'] - arrival_ul_mid)
+    delta = df[df['fillQuantity']>0]['fillDe'].iloc[0] # This implicitly assumes all our executions are in the same contract
+    if delta != 0:
+        df['fillUMid'] = (df['fillUBid'] + df['fillUBid'])/2
+        df['fillDAdjPrice'] = df['fillPrice'] - delta * (df['fillUMid'] - arrival_ul_mid)
+        df['fillDAdjBid'] = df['fillBid'] - delta * (df['fillUMid'] - arrival_ul_mid)
+        df['fillDAdjAsk'] = df['fillAsk'] - delta * (df['fillUMid'] - arrival_ul_mid)
+        df['fillDAdjMark'] = df['fillMark'] - delta * (df['fillUMid'] - arrival_ul_mid)
 
     # Add a column to df converting the d-adj fill to a vol
     arrival_mid = (df.loc[df.index[0], 'parentBid'] + df.loc[df.index[0], 'parentAsk']) / 2
     arrival_mark = df.loc[df.index[0], 'parentMark']
-    first_fill_vol = df[df['fillQuantity'] > 0]['fillVol'][0]
-    first_fill_adj_px = df[df['fillQuantity'] > 0]['fillDAdjPrice'][0]
-    vega = df[df['fillQuantity']>0]['fillVe'][0]  # Again, not true if we have multiple contracts in the same order
-    arrival_mid_vol = first_fill_vol + (arrival_mid - first_fill_adj_px) / (100 * vega)
-    arrival_mark_vol = first_fill_vol + (arrival_mark - first_fill_adj_px) / (100 * vega)
-    df['fillCalcVol'] = arrival_mid_vol + (df['fillDAdjPrice'] - arrival_mid) / (100 * vega)
-    df['fillCalcVolBid'] = arrival_mid_vol + (df['fillDAdjBid'] - arrival_mid) / (100 * vega)
-    df['fillCalcVolAsk'] = arrival_mid_vol + (df['fillDAdjAsk'] - arrival_mid) / (100 * vega)
-    df['fillCalcVolMark'] = arrival_mid_vol + (df['fillDAdjMark'] - arrival_mid) / (100 * vega)
+    if delta != 0:
+        first_fill_vol = df[df['fillQuantity'] > 0]['fillVol'].iloc[0]
+        first_fill_adj_px = df[df['fillQuantity'] > 0]['fillDAdjPrice'].iloc[0]
+        vega = df[df['fillQuantity']>0]['fillVe'].iloc[0]  # Again, not true if we have multiple contracts in the same order
+        arrival_mid_vol = first_fill_vol + (arrival_mid - first_fill_adj_px) / (100 * vega)
+        arrival_mark_vol = first_fill_vol + (arrival_mark - first_fill_adj_px) / (100 * vega)
+        df['fillCalcVol'] = arrival_mid_vol + (df['fillDAdjPrice'] - arrival_mid) / (100 * vega)
+        df['fillCalcVolBid'] = arrival_mid_vol + (df['fillDAdjBid'] - arrival_mid) / (100 * vega)
+        df['fillCalcVolAsk'] = arrival_mid_vol + (df['fillDAdjAsk'] - arrival_mid) / (100 * vega)
+        df['fillCalcVolMark'] = arrival_mid_vol + (df['fillDAdjMark'] - arrival_mid) / (100 * vega)
     fills_df = df[df['fillQuantity'] > 0]
+
+    # Fudge the contract multiplier rather than looking it up properly
+    if df['secType'].iloc[0] == 'Option':
+        mult = 100
+    else:
+        mult = 1
 
     # Prepare to populate TCA results
     cols = ['Maker', 'Taker', 'Total', 'Desc']
-    results = pd.DataFrame(columns= cols)
+    rows = ['Child Orders', 'Avg Child Size', 'Filled Contracts',
+       'Contract Fill Rate', 'Px Range', 'Exec Px', 'Arr Slip Mid Px',
+       'Arr Slip Mid USD', 'Arr Slip Mark Px', 'Arr Slip Mark USD',
+       'Eq Weighted Mid Px', 'Slip to EqW Mid Px', 'Slip to EqW Mid USD',
+       'Eq Weighted Mark Px', 'Slip to EqW Mark Px', 'Slip to EqW Mark USD',
+       'DAdj Px Range', 'Exec DAdj Px', 'Arr Slip Mid DAdj Px',
+       'Arr Slip Mid DAdj USD', 'Arr Slip Mark DAdj Px',
+       'Arr Slip Mark DAdj USD', 'Eq Weighted Mid DAdj Px',
+       'Slip to EqW Mid DAdj Px', 'Slip to EqW Mid DAdj USD',
+       'Eq Weighted Mark DAdj Px', 'Slip to EqW Mark DAdj Px',
+       'Slip to EqW Mark DAdj USD', 'Vol Range', 'Exec Vol',
+       'Arr Slip Mid Vol', 'Arr Slip Mid Vol USD', 'Arr Slip Mark Vol',
+       'Arr Slip Mark Vol USD', 'Eq Weighted Mid Vol', 'Slip to EqW Mid Vol',
+       'Slip to EqW Mid Vol USD', 'Eq Weighted Mark Vol',
+       'Slip to EqW Mark Vol', 'Slip to EqW Mark Vol USD', 'Fill Pct Spread']
+    results = pd.DataFrame(index = rows, columns = cols)
     make_df = df[df['childMakerTaker']=='Maker']
     take_df = df[df['childMakerTaker'] == 'Taker']
 
@@ -77,65 +104,75 @@ def calc_option_TCA_metrics(df):
         side = -1
 
     def populate_rows(df, col):
+        # Overall stats
         results.loc['Child Orders', col] = df['clOrdId'].unique().shape[0]
         results.loc['Avg Child Size', col] = df.groupby('clOrdId').first()['childSize'].sum() / results.loc['Child Orders', col]
         results.loc['Filled Contracts', col] = df['fillQuantity'].sum()
         results.loc['Contract Fill Rate', col] = results.loc['Filled Contracts', col] / \
                                                      (results.loc['Avg Child Size', col] * results.loc['Child Orders', col])
+        results.loc['Fill Pct Spread', col] = ((fills_df['fillPrice'] - fills_df['fillBid']) / (
+                    fills_df['fillAsk'] - fills_df['fillBid'])
+                                               * fills_df['fillQuantity']).sum() / fills_df['fillQuantity'].sum()
+        # Basic arrival slippage
         results.loc['Px Range', col] = df['fillPrice'].max() - df['fillPrice'].min()
         results.loc['Exec Px', col] = (df['fillPrice'] * df['fillQuantity']).sum() / df['fillQuantity'].sum()
         results.loc['Arr Slip Mid Px', col] = side * (arrival_mid - results.loc['Exec Px', col])
-        results.loc['Arr Slip Mid USD', col] = results.loc['Arr Slip Mid Px', col] * results.loc['Filled Contracts', col] * 100
-        results.loc['Arr Slip Mark Px', col] = side * (arrival_mark - results.loc['Exec Px', col])
-        results.loc['Arr Slip Mark USD', col] = results.loc['Arr Slip Mark Px', col] * results.loc['Filled Contracts', col] * 100
+        results.loc['Arr Slip Mid USD', col] = results.loc['Arr Slip Mid Px', col] * results.loc['Filled Contracts', col] * mult
+        if delta != 0:
+            results.loc['Arr Slip Mark Px', col] = side * (arrival_mark - results.loc['Exec Px', col])
+            results.loc['Arr Slip Mark USD', col] = results.loc['Arr Slip Mark Px', col] * results.loc['Filled Contracts', col] * mult
+
+        # Proxy for slippage to VWAP
         results.loc['Eq Weighted Mid Px', col] = ((fills_df['fillBid'] + fills_df['fillAsk'])/2).mean()
         # This is a *VERY* poor proxy for VWAP since it's sampled on fills.  I need to get access to historical time&sales data ...
         results.loc['Slip to EqW Mid Px', col] = side * (results.loc['Eq Weighted Mid Px', col] - results.loc['Exec Px', col])
-        results.loc['Slip to EqW Mid USD', col] = results.loc['Slip to EqW Mid Px', col] * results.loc['Filled Contracts', col] * 100
-        results.loc['Eq Weighted Mark Px', col] = fills_df['fillMark'].mean()
-        results.loc['Slip to EqW Mark Px', col] = side * (results.loc['Eq Weighted Mark Px', col] - results.loc['Exec Px', col])
-        results.loc['Slip to EqW Mark USD', col] = results.loc['Slip to EqW Mark Px', col] * results.loc['Filled Contracts', col] * 100
-        results.loc['DAdj Px Range', col] = fills_df['fillDAdjPrice'].max() - fills_df['fillDAdjPrice'].min()
-        results.loc['Exec DAdj Px', col] = (df['fillDAdjPrice'] * df['fillQuantity']).sum() / df['fillQuantity'].sum()
-        results.loc['Arr Slip Mid DAdj Px', col] = side * (arrival_mid - results.loc['Exec DAdj Px', col])
-        results.loc['Arr Slip Mid DAdj USD', col] = side * results.loc['Arr Slip Mid DAdj Px', col] * results.loc['Filled Contracts', col] * 100
-        results.loc['Arr Slip Mark DAdj Px', col] = side * (arrival_mark - results.loc['Exec DAdj Px', col])
-        results.loc['Arr Slip Mark DAdj USD', col] = side * results.loc['Arr Slip Mark DAdj Px', col] * results.loc['Filled Contracts', col] * 100
-        results.loc['Eq Weighted Mid DAdj Px', col] = ((fills_df['fillDAdjBid'] + fills_df['fillDAdjAsk'])/2).mean()
-        results.loc['Slip to EqW Mid DAdj Px', col] = side * (results.loc['Eq Weighted Mid DAdj Px', col] - results.loc['Exec DAdj Px', col])
-        results.loc['Slip to EqW Mid DAdj USD', col] = results.loc['Slip to EqW Mid DAdj Px', col] * results.loc['Filled Contracts', col] * 100
-        results.loc['Eq Weighted Mark DAdj Px', col] = fills_df['fillDAdjMark'].mean()
-        results.loc['Slip to EqW Mark DAdj Px', col] = side * (results.loc['Eq Weighted Mark DAdj Px', col] - results.loc['Exec DAdj Px', col])
-        results.loc['Slip to EqW Mark DAdj USD', col] = results.loc['Slip to EqW Mark DAdj Px', col] * results.loc['Filled Contracts', col] * 100
-        results.loc['Vol Range', col] = fills_df['fillCalcVol'].max() - fills_df['fillCalcVol'].min()
-        results.loc['Exec Vol', col] = (df['fillCalcVol'] * df['fillQuantity']).sum() / df['fillQuantity'].sum()
-        results.loc['Arr Slip Mid Vol', col] = side * (arrival_mid_vol - results.loc['Exec Vol', col])
-        results.loc['Arr Slip Mid Vol USD', col] = results.loc['Arr Slip Mid Vol', col] * vega * results.loc['Filled Contracts', col] * 10000
-        # Vol USD fields will differ slightly from DAdjUSD due to gamma if using SR Vols but will exactly match with CalcVol
-        results.loc['Arr Slip Mark Vol', col] = side * (arrival_mark_vol - results.loc['Exec Vol', col])
-        results.loc['Arr Slip Mark Vol USD', col] = results.loc['Arr Slip Mark Vol', col] * vega * results.loc['Filled Contracts', col] * 10000
-        results.loc['Eq Weighted Mid Vol', col] = ((fills_df['fillCalcVolBid'] + fills_df['fillCalcVolAsk'])/2).mean()
-        results.loc['Slip to EqW Mid Vol', col] = side * (results.loc['Eq Weighted Mid Vol', col] - results.loc['Exec Vol', col])
-        results.loc['Slip to EqW Mid Vol USD', col] = results.loc['Slip to EqW Mid Vol', col] * vega * results.loc['Filled Contracts', col] * 10000
-        results.loc['Eq Weighted Mark Vol', col] = fills_df['fillCalcVolMark'].mean()
-        results.loc['Slip to EqW Mark Vol', col] = side * (results.loc['Eq Weighted Mark Vol', col] - results.loc['Exec Vol', col])
-        results.loc['Slip to EqW Mark Vol USD', col] = results.loc['Slip to EqW Mark Vol', col] * vega * results.loc['Filled Contracts', col] * 10000
+        results.loc['Slip to EqW Mid USD', col] = results.loc['Slip to EqW Mid Px', col] * results.loc['Filled Contracts', col] * mult
+        if delta != 0:
+            results.loc['Eq Weighted Mark Px', col] = fills_df['fillMark'].mean()
+            results.loc['Slip to EqW Mark Px', col] = side * (results.loc['Eq Weighted Mark Px', col] - results.loc['Exec Px', col])
+            results.loc['Slip to EqW Mark USD', col] = results.loc['Slip to EqW Mark Px', col] * results.loc['Filled Contracts', col] * mult
 
+        # Show delta-adjusted and vol versions of above
+        if delta != 0:
+            # Delta-adjusted
+            results.loc['DAdj Px Range', col] = fills_df['fillDAdjPrice'].max() - fills_df['fillDAdjPrice'].min()
+            results.loc['Exec DAdj Px', col] = (df['fillDAdjPrice'] * df['fillQuantity']).sum() / df['fillQuantity'].sum()
+            results.loc['Arr Slip Mid DAdj Px', col] = side * (arrival_mid - results.loc['Exec DAdj Px', col])
+            results.loc['Arr Slip Mid DAdj USD', col] = side * results.loc['Arr Slip Mid DAdj Px', col] * results.loc['Filled Contracts', col] * mult
+            results.loc['Arr Slip Mark DAdj Px', col] = side * (arrival_mark - results.loc['Exec DAdj Px', col])
+            results.loc['Arr Slip Mark DAdj USD', col] = side * results.loc['Arr Slip Mark DAdj Px', col] * results.loc['Filled Contracts', col] * mult
+            results.loc['Eq Weighted Mid DAdj Px', col] = ((fills_df['fillDAdjBid'] + fills_df['fillDAdjAsk'])/2).mean()
+            results.loc['Slip to EqW Mid DAdj Px', col] = side * (results.loc['Eq Weighted Mid DAdj Px', col] - results.loc['Exec DAdj Px', col])
+            results.loc['Slip to EqW Mid DAdj USD', col] = results.loc['Slip to EqW Mid DAdj Px', col] * results.loc['Filled Contracts', col] * mult
+            results.loc['Eq Weighted Mark DAdj Px', col] = fills_df['fillDAdjMark'].mean()
+            results.loc['Slip to EqW Mark DAdj Px', col] = side * (results.loc['Eq Weighted Mark DAdj Px', col] - results.loc['Exec DAdj Px', col])
+            results.loc['Slip to EqW Mark DAdj USD', col] = results.loc['Slip to EqW Mark DAdj Px', col] * results.loc['Filled Contracts', col] * mult
+            # Vol
+            results.loc['Vol Range', col] = fills_df['fillCalcVol'].max() - fills_df['fillCalcVol'].min()
+            results.loc['Exec Vol', col] = (df['fillCalcVol'] * df['fillQuantity']).sum() / df['fillQuantity'].sum()
+            results.loc['Arr Slip Mid Vol', col] = side * (arrival_mid_vol - results.loc['Exec Vol', col])
+            results.loc['Arr Slip Mid Vol USD', col] = results.loc['Arr Slip Mid Vol', col] * vega * results.loc['Filled Contracts', col] * 100 * mult
+            # Vol USD fields will differ slightly from DAdjUSD due to gamma if using SR Vols but will exactly match with CalcVol
+            results.loc['Arr Slip Mark Vol', col] = side * (arrival_mark_vol - results.loc['Exec Vol', col])
+            results.loc['Arr Slip Mark Vol USD', col] = results.loc['Arr Slip Mark Vol', col] * vega * results.loc['Filled Contracts', col] * 100 * mult
+            results.loc['Eq Weighted Mid Vol', col] = ((fills_df['fillCalcVolBid'] + fills_df['fillCalcVolAsk'])/2).mean()
+            results.loc['Slip to EqW Mid Vol', col] = side * (results.loc['Eq Weighted Mid Vol', col] - results.loc['Exec Vol', col])
+            results.loc['Slip to EqW Mid Vol USD', col] = results.loc['Slip to EqW Mid Vol', col] * vega * results.loc['Filled Contracts', col] * 100 * mult
+            results.loc['Eq Weighted Mark Vol', col] = fills_df['fillCalcVolMark'].mean()
+            results.loc['Slip to EqW Mark Vol', col] = side * (results.loc['Eq Weighted Mark Vol', col] - results.loc['Exec Vol', col])
+            results.loc['Slip to EqW Mark Vol USD', col] = results.loc['Slip to EqW Mark Vol', col] * vega * results.loc['Filled Contracts', col] * 100 * mult
 
-        results.loc['Fill Pct Spread', col] = ((fills_df['fillPrice'] - fills_df['fillBid']) / (fills_df['fillAsk'] - fills_df['fillBid'])
-                                              * fills_df['fillQuantity']).sum() / fills_df['fillQuantity'].sum()
-
-    if make_df['childSize'].sum() > 0:
+    if make_df['fillQuantity'].sum() > 0:
         populate_rows(make_df, 'Maker')
     else:
         results['Maker'] = 0
 
-    if take_df['childSize'].sum() > 0:
+    if take_df['fillQuantity'].sum() > 0:
         populate_rows(take_df, 'Taker')
     else:
         results['Taker'] = 0
 
-    if df['childSize'].sum() > 0:
+    if df['fillQuantity'].sum() > 0:
         populate_rows(df, 'Total')
     else:
         results['Total'] = 0
@@ -148,8 +185,52 @@ def calc_option_TCA_metrics(df):
     results.loc[results['Desc'].isna(), 'Desc'] = ''
     return results
 
+def row_format_df(df, rowformats):
+    out_df = pd.DataFrame(index=df.index, columns=df.columns)
+    for i in range(len(df.index)):
+        for j in range(len(df.columns)):
+            if (type(df.iloc[i, j]) is str) or (pd.isna(df.iloc[i, j])):
+                out_df.iloc[i, j] = df.iloc[i, j]
+            else:
+                out_df.iloc[i, j] = rowformats[i].format(df.iloc[i, j])
+    out_df = out_df[out_df.notna().all(axis=1)]
+    return out_df
+
+def make_title(df):
+    title1 = f"{df['orderSide'].iloc[0]}_{results.loc['Filled Contracts', 'Total']}_{df['secKey_tk'].iloc[0]}_"
+    title2 = f"{df['secKey_yr'].iloc[0]}{df['secKey_mn'].iloc[0]:02}{df['secKey_dy'].iloc[0]}_"
+    title3 = f"{df['secKey_xx'].iloc[0]} {df['secKey_cp'].iloc[0]}_"
+    title4 = f"{df['parentDttm'].iloc[0]:%Y%m%d}"
+    if df['secKey_mn'].iloc[0] > 0:
+        title = title1 + title2 + title3 + title4
+    else:
+        title = title1 + title4
+    return title
+
 if __name__ == '__main__':
-    execs = pd.read_csv('~/Dropbox/Element/Phase2/TradesJan25.csv')
+    execs = pd.read_csv('~/Dropbox/Element/FillData/TradesJan25.csv')
     parents = execs['baseParentNumber'].unique()
-    execs = execs[execs['baseParentNumber'] == parents[0]]
+    execs = execs[execs['baseParentNumber'] == parents[1]]
     results = calc_option_TCA_metrics(execs)
+    
+    # Make the results readable
+    comma = '{:>10,.0f}'
+    price = '{:>10.2f}'
+    pct = '{:>10.2%}'
+    rowformats = [comma, comma, comma, pct, price,
+                  price, price, comma, price, comma,
+                  price, price, comma, price, price,
+                  comma, price, price, price, comma,
+                  price, comma, price, price, comma,
+                  price, price, comma, pct, pct,
+                  pct, comma, pct, comma, pct, pct,
+                  comma, pct, pct, comma, pct]
+    pretty_df= row_format_df(results, rowformats)
+    title = make_title(execs)
+
+    # Save to csv
+    pretty_df.to_csv(f'~/Dropbox/Element/TCA/{title}.csv')
+    
+    
+
+

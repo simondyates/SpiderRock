@@ -28,19 +28,17 @@ def round_price_cols(df):
 
 def process_time_cols(df):
     # df is a query from srtrade009.msgsrparentexecution
-    # Converts string time cols to Timestamps, including nanos if available
+    # Convert SR's string time fields and convert to tz-aware Timestamps, adding in micros if available
 
-    def col_to_time(col):
+    time_cols = [col for col in df.columns if ('Dttm' in col) and ('_us' not in col)]
+    for col in time_cols:
         df[col] = df[col].apply(pd.to_datetime)
         df[col] = df[col].dt.tz_localize('America/Chicago').dt.tz_convert('America/New_York')
-        s = df[col + '_us'].apply(pd.Timedelta, unit='micros')
-        df[col] = df[col] + s
-
-    for col in ['childDttm', 'fillTransactDttm']:
-        col_to_time(col)
-
-    df['parentDttm'] = df['parentDttm'].apply(pd.to_datetime)
-    df['parentDttm'] = df['parentDttm'].dt.tz_localize('America/Chicago').dt.tz_convert('America/New_York')
+        try:
+            s = df[col + '_us'].apply(pd.Timedelta, unit='micros')
+            df[col] = df[col] + s
+        except:
+            pass
 
 
 def format_df(df, format_dict, axis=0, drop_Nan=True):

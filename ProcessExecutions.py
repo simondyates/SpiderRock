@@ -1,3 +1,5 @@
+# Really should refactor my variable names to make them more consistent
+
 import pandas as pd
 from collections import namedtuple
 from SRUtils import process_time_cols, format_df, make_title

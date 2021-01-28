@@ -11,10 +11,8 @@ def calc_option_TCA_metrics(df, qwap_mark=None, qwap_Umark=None, actualUvsAvg=No
     # qwap_mark is for primary instrument and qwap_Umark is for underlying
 
     # Add a column to df representing the fill price delta-adjusted back to arrival_ul_mid
-    # This could be improved by incorporating a gamma adjustment
     arrival_ul_mid = (df.loc[df.index[0], 'parentUBid'] + df.loc[df.index[0], 'parentUAsk']) / 2
-    delta = df[df['fillQuantity'] > 0]['fillDe'].iloc[
-        0]  # This implicitly assumes all our executions are in the same contract
+    delta = df[df['fillQuantity'] > 0]['fillDe'].iloc[0]
     if delta != 0:
         df['fillUMid'] = (df['fillUBid'] + df['fillUAsk']) / 2
         df['fillDAdjPrice'] = df['fillPrice'] - delta * (df['fillUMid'] - arrival_ul_mid)
@@ -28,8 +26,7 @@ def calc_option_TCA_metrics(df, qwap_mark=None, qwap_Umark=None, actualUvsAvg=No
     if delta != 0:
         first_fill_vol = df[df['fillQuantity'] > 0]['fillVol'].iloc[0]
         first_fill_adj_px = df[df['fillQuantity'] > 0]['fillDAdjPrice'].iloc[0]
-        vega = df[df['fillQuantity'] > 0]['fillVe'].iloc[
-            0]  # Again, not true if we have multiple contracts in the same order
+        vega = df[df['fillQuantity'] > 0]['fillVe'].iloc[0]
         arrival_mid_vol = first_fill_vol + (arrival_mid - first_fill_adj_px) / (100 * vega)
         arrival_mark_vol = first_fill_vol + (arrival_mark - first_fill_adj_px) / (100 * vega)
         df['fillCalcVol'] = arrival_mid_vol + (df['fillDAdjPrice'] - arrival_mid) / (100 * vega)
@@ -92,14 +89,9 @@ def calc_option_TCA_metrics(df, qwap_mark=None, qwap_Umark=None, actualUvsAvg=No
                  'Vol Range': field(pct2,
                                     'All vol fields below correspond to the DAdj fields above, but expressed in vols'),
                  'Arr Slip Mid Theo Vol': field(pct2, ''),
-                 # Commemting out the vol USD fields but leaving them here.  They should be exactly the same numbers as above
-                 # So no need to display them - but they are a useful check.
-                 #'Arr Slip Mid Theo Vol USD': field(comma, ''),
                  'Arr Slip Mark Theo Vol': field(pct2, ''),
-                 #'Arr Slip Mark Theo Vol USD': field(comma, ''),
                  'QWAP Vol': field(pct2, ''),
                  'Theo Slip to QWAP Vol': field(pct2, ''),
-                 #'Theo Slip to QWAP Vol USD': field(comma, ''),
                  'Exec DAdj Act Arr Px': field(price,
                                            'Average of option fills delta-adjusted using actual hedge fills back to arrival mid price'),
                  'Act U/L Px': field(price, 'Weighted average actual hedge price'),
@@ -115,11 +107,8 @@ def calc_option_TCA_metrics(df, qwap_mark=None, qwap_Umark=None, actualUvsAvg=No
                  'Slip to Exec DAdj Act QWAP USD': field(comma, 'Above field * contracts filled * contract multiplier'),
                  'Exec Act Vol': field(pct2, 'Implied volatility of Exec DAdj Act Px at arrival mid price'),
                  'Arr Slip Mid Act Vol': field(pct2, ''),
-                 #'Arr Slip Mid Act Vol USD': field(comma, ''),
                  'Arr Slip Mark Act Vol': field(pct2, ''),
-                 #'Arr Slip Mark Act Vol USD': field(comma, ''),
                  'Act Slip to QWAP Vol': field(pct2, ''),
-                 #'Act Slip to QWAP Vol USD': field(comma, '')
                  }
 
     results = pd.DataFrame(index=rows_dict.keys(), columns=cols)
@@ -144,8 +133,9 @@ def calc_option_TCA_metrics(df, qwap_mark=None, qwap_Umark=None, actualUvsAvg=No
                 fills_df['fillAsk'] - fills_df['fillBid'])
                                                * fills_df['fillQuantity']).sum() / fills_df['fillQuantity'].sum()
         results.loc['Arrival Mid', col] = arrival_mid
-        results.loc['Arrival Mark', col] = arrival_mark
-        results.loc['Arrival U/L Mid', col] = arrival_ul_mid
+        if delta != 0:
+            results.loc['Arrival Mark', col] = arrival_mark
+            results.loc['Arrival U/L Mid', col] = arrival_ul_mid
         # Basic arrival slippage
         results.loc['Px Range', col] = df['fillPrice'].max() - df['fillPrice'].min()
         results.loc['Exec Px', col] = (df['fillPrice'] * df['fillQuantity']).sum() / df['fillQuantity'].sum()
@@ -182,30 +172,26 @@ def calc_option_TCA_metrics(df, qwap_mark=None, qwap_Umark=None, actualUvsAvg=No
             results.loc['Arr Slip Mark DAdj Theo USD', col] = side * results.loc['Arr Slip Mark DAdj Theo Px', col] * \
                                                               results.loc['Filled Contracts', col] * mult
             # Delta-adjusted QWAP
-            results.loc['Exec DAdj Theo QWAP Px', col] = results.loc['Exec Px', col] - delta * (fill_Umark - qwap_Umark)
-            results.loc['Slip to Exec DAdj Theo QWAP Px', col] = side * (
-                        qwap_mark - results.loc['Exec DAdj Theo QWAP Px', col])
-            results.loc['Slip to Exec DAdj Theo QWAP USD', col] = results.loc['Slip to Exec DAdj Theo QWAP Px', col] * \
-                                                                  results.loc['Filled Contracts', col] * mult
+            if qwap_mark is not None:
+                results.loc['Exec DAdj Theo QWAP Px', col] = results.loc['Exec Px', col] - delta * (fill_Umark - qwap_Umark)
+                results.loc['Slip to Exec DAdj Theo QWAP Px', col] = side * (
+                            qwap_mark - results.loc['Exec DAdj Theo QWAP Px', col])
+                results.loc['Slip to Exec DAdj Theo QWAP USD', col] = results.loc['Slip to Exec DAdj Theo QWAP Px', col] * \
+                                                                      results.loc['Filled Contracts', col] * mult
             # Vol
             results.loc['Vol Range', col] = fills_df['fillCalcVol'].max() - fills_df['fillCalcVol'].min()
             results.loc['Exec Theo Vol', col] = (df['fillCalcVol'] * df['fillQuantity']).sum() / df[
                 'fillQuantity'].sum()
             results.loc['Arr Slip Mid Theo Vol', col] = side * (arrival_mid_vol - results.loc['Exec Theo Vol', col])
-            #results.loc['Arr Slip Mid Theo Vol USD', col] = results.loc['Arr Slip Mid Theo Vol', col] * vega * \
-            #                                                results.loc['Filled Contracts', col] * 100 * mult
             # Vol USD fields will differ slightly from DAdjUSD due to gamma if using SR Vols but will exactly match with CalcVol
             results.loc['Arr Slip Mark Theo Vol', col] = side * (arrival_mark_vol - results.loc['Exec Theo Vol', col])
-            #results.loc['Arr Slip Mark Theo Vol USD', col] = results.loc['Arr Slip Mark Theo Vol', col] * vega * \
-            #                                                 results.loc['Filled Contracts', col] * 100 * mult
-            results.loc['QWAP Vol', col] = arrival_mid_vol + (
-                        qwap_mark - delta * (qwap_Umark - arrival_ul_mid) - arrival_mid) / (100 * vega)
-            results.loc['Theo Slip to QWAP Vol', col] = side * (
-                        results.loc['QWAP Vol', col] - results.loc['Exec Theo Vol', col])
-            #results.loc['Theo Slip to QWAP Vol USD', col] = results.loc['Theo Slip to QWAP Vol', col] * vega * \
-            #                                                results.loc['Filled Contracts', col] * 100 * mult
+            if qwap_mark is not None:
+                results.loc['QWAP Vol', col] = arrival_mid_vol + (
+                            qwap_mark - delta * (qwap_Umark - arrival_ul_mid) - arrival_mid) / (100 * vega)
+                results.loc['Theo Slip to QWAP Vol', col] = side * (
+                            results.loc['QWAP Vol', col] - results.loc['Exec Theo Vol', col])
 
-        if actualUvsAvg is not None:  # guarantees delta, vega != 0 as well
+        if (actualUvsAvg is not None) and (delta != 0):
             # Calculate values delta-adjusted using actual execution level
             actual_ul = (fills_df.loc[fills_df.index[0], 'fillUBid'] + fills_df.loc[fills_df.index[0], 'fillUBid']) * (1 + actualUvsAvg) / 2
             # using the u/l at the time of first option fill for proxy of u/l at first stock fill
@@ -219,24 +205,21 @@ def calc_option_TCA_metrics(df, qwap_mark=None, qwap_Umark=None, actualUvsAvg=No
             results.loc['Arr Slip Mark DAdj Act USD', col] = side * results.loc['Arr Slip Mark DAdj Act Px', col] * \
                                                              results.loc['Filled Contracts', col] * mult
             # Delta-adjusted QWAP
-            results.loc['Exec DAdj Act QWAP Px', col] = results.loc['Exec Px', col] - delta * (actual_ul - qwap_Umark)
-            results.loc['Slip to Exec DAdj Act QWAP Px', col] = side * (
-                        qwap_mark - results.loc['Exec DAdj Act QWAP Px', col])
-            results.loc['Slip to Exec DAdj Act QWAP USD', col] = results.loc['Slip to Exec DAdj Act QWAP Px', col] * \
-                                                                 results.loc['Filled Contracts', col] * mult
+            if qwap_mark is not None:
+                results.loc['Exec DAdj Act QWAP Px', col] = results.loc['Exec Px', col] - delta * (actual_ul - qwap_Umark)
+                results.loc['Slip to Exec DAdj Act QWAP Px', col] = side * (
+                            qwap_mark - results.loc['Exec DAdj Act QWAP Px', col])
+                results.loc['Slip to Exec DAdj Act QWAP USD', col] = results.loc['Slip to Exec DAdj Act QWAP Px', col] * \
+                                                                     results.loc['Filled Contracts', col] * mult
             # Vol
-            results.loc['Exec Act Vol', col] = arrival_mid_vol + (
-                        results.loc['Exec DAdj Act Arr Px', col] - arrival_mid) / (100 * vega)
-            results.loc['Arr Slip Mid Act Vol', col] = side * (arrival_mid_vol - results.loc['Exec Act Vol', col])
-            #results.loc['Arr Slip Mid Act Vol USD', col] = results.loc['Arr Slip Mid Act Vol', col] * vega * \
-            #                                               results.loc['Filled Contracts', col] * 100 * mult
-            results.loc['Arr Slip Mark Act Vol', col] = side * (arrival_mark_vol - results.loc['Exec Act Vol', col])
-            #results.loc['Arr Slip Mark Act Vol USD', col] = results.loc['Arr Slip Mark Act Vol', col] * vega * \
-            #                                                results.loc['Filled Contracts', col] * 100 * mult
-            results.loc['Act Slip to QWAP Vol', col] = side * (
-                        results.loc['QWAP Vol', col] - results.loc['Exec Act Vol', col])
-            #results.loc['Act Slip to QWAP Vol USD', col] = results.loc['Act Slip to QWAP Vol', col] * vega * \
-             #                                              results.loc['Filled Contracts', col] * 100 * mult
+            if delta != 0:
+                results.loc['Exec Act Vol', col] = arrival_mid_vol + (
+                            results.loc['Exec DAdj Act Arr Px', col] - arrival_mid) / (100 * vega)
+                results.loc['Arr Slip Mid Act Vol', col] = side * (arrival_mid_vol - results.loc['Exec Act Vol', col])
+                results.loc['Arr Slip Mark Act Vol', col] = side * (arrival_mark_vol - results.loc['Exec Act Vol', col])
+                if qwap_mark is not None:
+                    results.loc['Act Slip to QWAP Vol', col] = side * (
+                                results.loc['QWAP Vol', col] - results.loc['Exec Act Vol', col])
 
     if make_df['fillQuantity'].sum() > 0:
         populate_rows(make_df, 'Maker')
@@ -265,7 +248,7 @@ def calc_option_TCA_metrics(df, qwap_mark=None, qwap_Umark=None, actualUvsAvg=No
 
 
 if __name__ == '__main__':
-    df = pd.read_csv('./FillData/Trades20210125.csv')
+    df = pd.read_csv('./FillData/Trades20210127.csv')
     process_time_cols(df)
     parents = df['baseParentNumber'].unique()
     execs = df[df['baseParentNumber'] == parents[0]].copy()
@@ -278,7 +261,7 @@ if __name__ == '__main__':
     else:
         actualUvsAvg = None
 
-    brkr = pd.read_csv('./FillData/BrkrState20210126.csv')
+    brkr = pd.read_csv('./FillData/BrkrState20210127.csv')
     brkr = brkr[brkr['baseParentNumber'] == parents[0]]
     if brkr.shape[0] > 0:
         qwap_mark = brkr.loc[brkr.index[0], 'brokerQwapMark']

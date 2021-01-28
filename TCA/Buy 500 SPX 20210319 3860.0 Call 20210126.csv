@@ -1,0 +1,48 @@
+,Maker,Taker,Total,Desc
+Child Orders,         0,        15,        15,Number of child orders which had fills
+Avg Child Size,         0,        41,        41,Avg size of child orders which had fills
+Filled Contracts,         0,       500,       500,Total number of contracts filled
+Contract Fill Rate,        0%,       82%,       82%,Filled Contracts divided by total size sent by child orders which had fills
+Fill Pct Spread,     0.00%,   100.00%,   100.00%,Quantity-weighted average of fill price in spread units at time of fill: 0 = on bid; 1 = on offer
+Arrival Mid,      0.00,     99.65,     99.65,Mid at order creation
+Arrival Mark,      0.00,     99.71,     99.71,SR Mark at order creation
+Arrival U/L Mid,      0.00,   3848.44,   3848.44,Mid of underlying at order creation
+Exec Px,      0.00,    101.06,    101.06,Average filled price
+Px Range,      0.00,      2.00,      2.00,High minus low fill price
+Arr Slip Mid Px,      0.00,     -1.41,     -1.41,Amount by which Exec Px was more favorable than mid at order creation
+Arr Slip Mid USD,         0,"   -70,320","   -70,320",Above field * contracts filled * contract multiplier
+Arr Slip Mark Px,      0.00,     -1.35,     -1.35,Amount by which Exec Px was more favorable than SR mark at order creation
+Arr Slip Mark USD,         0,"   -67,330","   -67,330",Above field * contracts filled * contract multiplier
+QWAP Px,      0.00,    101.17,    101.17,SR-calculated QWAP
+QWAP U/L Px,      0.00,   3852.14,   3852.14,SR-calculated QWAP for underlying price
+Slip to QWAP Px,      0.00,      0.11,      0.11,Amount by which Exec Px was more favorable than the above price
+Slip to QWAP USD,         0,"     5,480","     5,480",Above field * contracts filled * contract multiplier
+Exec DAdj Theo Arr Px,      0.00,     99.82,     99.82,Average of option fills delta-adjusted from fill-time mid back to arrival mid price
+DAdj Theo Arr Px Range,      0.00,      1.05,      1.05,High minus low delta-adjusted fill price
+Theo U/L Px,      0.00,   3850.98,   3850.98,The weighted average mid of underlying at fill times
+Arr Slip Mid DAdj Theo Px,      0.00,     -0.17,     -0.17,Amount by which Exec DAdj Theo Px was more favorable than mid at order creation
+Arr Slip Mid DAdj Theo USD,         0,"    -8,660","    -8,660",Above field * contracts filled * contract multiplier
+Arr Slip Mark DAdj Theo Px,      0.00,     -0.11,     -0.11,Amount by which Exec DAdj Theo Px was more favorable than SR mark at order creation
+Arr Slip Mark DAdj Theo USD,         0,"    -5,670","    -5,670",Above field * contracts filled * contract multiplier
+Exec DAdj Theo QWAP Px,      0.00,    101.62,    101.62,Average of option fills delta-adjusted from fill-time mid back to QWAP u/l price
+Slip to Exec DAdj Theo QWAP Px,      0.00,     -0.45,     -0.45,Amount by which Exec DAdj Theo QWAP Px was more favorable than the above price
+Slip to Exec DAdj Theo QWAP USD,         0,"   -22,636","   -22,636",Above field * contracts filled * contract multiplier
+Exec Theo Vol,     0.00%,    18.74%,    18.74%,Implied volatility of Exec DAdj Theo Px at arrival mid price
+Vol Range,     0.00%,     0.18%,     0.18%,"All vol fields below correspond to the DAdj fields above, but expressed in vols"
+Arr Slip Mid Theo Vol,     0.00%,    -0.03%,    -0.03%,
+Arr Slip Mark Theo Vol,     0.00%,    -0.02%,    -0.02%,
+QWAP Vol,     0.00%,    18.66%,    18.66%,
+Theo Slip to QWAP Vol,     0.00%,    -0.08%,    -0.08%,
+Exec DAdj Act Arr Px,      0.00,     99.83,     99.83,Average of option fills delta-adjusted using actual hedge fills back to arrival mid price
+Act U/L Px,      0.00,   3850.96,   3850.96,Weighted average actual hedge price
+Arr Slip Mid DAdj Act Px,      0.00,     -0.18,     -0.18,Amount by which Exec DAdj Act Px was more favorable than mid at order creation
+Arr Slip Mid DAdj Act USD,         0,"    -9,076","    -9,076",Above field * contracts filled * contract multiplier
+Arr Slip Mark DAdj Act Px,      0.00,     -0.12,     -0.12,Amount by which Exec DAdj Act Px was more favorable than SR mark at order creation
+Arr Slip Mark DAdj Act USD,         0,"    -6,087","    -6,087",Above field * contracts filled * contract multiplier
+Exec DAdj Act QWAP Px,      0.00,    101.63,    101.63,Average of option fills delta-adjusted from fill-time mid back to QWAP u/l price
+Slip to Exec DAdj Act QWAP Px,      0.00,     -0.46,     -0.46,Amount by which Exec DAdj Act QWAP Px was more favorable than the above price
+Slip to Exec DAdj Act QWAP USD,         0,"   -23,053","   -23,053",Above field * contracts filled * contract multiplier
+Exec Act Vol,     0.00%,    18.74%,    18.74%,Implied volatility of Exec DAdj Act Px at arrival mid price
+Arr Slip Mid Act Vol,     0.00%,    -0.03%,    -0.03%,
+Arr Slip Mark Act Vol,     0.00%,    -0.02%,    -0.02%,
+Act Slip to QWAP Vol,     0.00%,    -0.08%,    -0.08%,

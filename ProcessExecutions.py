@@ -1,8 +1,6 @@
-# TO DO: pull in info from brkrState table (if available)
-
 import pandas as pd
 from collections import namedtuple
-from SRUtils import format_df, make_title
+from SRUtils import process_time_cols, format_df, make_title
 
 def calc_option_TCA_metrics(df, qwap_mark=None, qwap_Umark=None, formatted=True):
     # Returns a dataframe of TCA metrics for making and taking algos separately
@@ -10,23 +8,23 @@ def calc_option_TCA_metrics(df, qwap_mark=None, qwap_Umark=None, formatted=True)
     # qwap_mark is for primary instrument and qwap_Umark is for underlying
 
     # Convert SR's string time fields and convert to tz-aware Timestamps, adding in micros if available
-    # THIS IS UNNECESSARY
-    time_cols = [col for col in df.columns if ('Dttm' in col) and ('_us' not in col)]
-    for col in time_cols:
-        df[col] = df[col].apply(pd.to_datetime)
-        df[col] = df[col].dt.tz_localize('America/Chicago').dt.tz_convert('America/New_York')
-        try:
-            s = df[col + '_us'].apply(pd.Timedelta, unit='micros')
-            df[col] = df[col] + s
-        except:
-            pass
+    # THIS IS UNNECESSARY IN THIS CONTEXT CURRENTLY (would not be if using external time & sales)
+    #time_cols = [col for col in df.columns if ('Dttm' in col) and ('_us' not in col)]
+    #for col in time_cols:
+    #    df[col] = df[col].apply(pd.to_datetime)
+    #    df[col] = df[col].dt.tz_localize('America/Chicago').dt.tz_convert('America/New_York')
+    #    try:
+    #        s = df[col + '_us'].apply(pd.Timedelta, unit='micros')
+    #        df[col] = df[col] + s
+    #    except:
+    #        pass
 
     # Add a column to df representing the fill price delta-adjusted back to arrival_ul_mid
     # This could be improved by incorporating a gamma adjustment
     arrival_ul_mid = (df.loc[df.index[0], 'parentUBid'] + df.loc[df.index[0], 'parentUAsk']) / 2
     delta = df[df['fillQuantity']>0]['fillDe'].iloc[0] # This implicitly assumes all our executions are in the same contract
     if delta != 0:
-        df['fillUMid'] = (df['fillUBid'] + df['fillUBid'])/2
+        df['fillUMid'] = (df['fillUBid'] + df['fillUAsk'])/2
         df['fillDAdjPrice'] = df['fillPrice'] - delta * (df['fillUMid'] - arrival_ul_mid)
         df['fillDAdjBid'] = df['fillBid'] - delta * (df['fillUMid'] - arrival_ul_mid)
         df['fillDAdjAsk'] = df['fillAsk'] - delta * (df['fillUMid'] - arrival_ul_mid)
@@ -143,7 +141,7 @@ def calc_option_TCA_metrics(df, qwap_mark=None, qwap_Umark=None, formatted=True)
             results.loc['Arr Slip Mark DAdj Px', col] = side * (arrival_mark - results.loc['Exec DAdj Px', col])
             results.loc['Arr Slip Mark DAdj USD', col] = side * results.loc['Arr Slip Mark DAdj Px', col] * results.loc['Filled Contracts', col] * mult
             # Delta-adjusted QWAP
-            fill_Umark = ((df['fillUBid'] + df['fillUAsk']) * df['fillQuantity']).sum() / (2 * df['fillQuantity'].sum())
+            fill_Umark = (df['fillUMid'] * df['fillQuantity']).sum() / df['fillQuantity'].sum()
             results.loc['Exec DAdj QWAP Px', col] = results.loc['Exec Px', col] - delta * (fill_Umark - qwap_Umark)
             results.loc['Slip to Exec DAdj QWAP Px', col] = side * (qwap_mark - results.loc['Exec DAdj QWAP Px', col])
             results.loc['Slip to Exec DAdj QWAP USD', col] = results.loc['Slip to Exec DAdj QWAP Px', col] * results.loc['Filled Contracts', col] * mult
@@ -155,8 +153,9 @@ def calc_option_TCA_metrics(df, qwap_mark=None, qwap_Umark=None, formatted=True)
             # Vol USD fields will differ slightly from DAdjUSD due to gamma if using SR Vols but will exactly match with CalcVol
             results.loc['Arr Slip Mark Vol', col] = side * (arrival_mark_vol - results.loc['Exec Vol', col])
             results.loc['Arr Slip Mark Vol USD', col] = results.loc['Arr Slip Mark Vol', col] * vega * results.loc['Filled Contracts', col] * 100 * mult
-            results.loc['QWAP Vol', col] = results.loc['Exec Vol', col] - results.loc['Slip to Exec DAdj QWAP Px', col] / (100 * vega)
-            results.loc['Slip to QWAP Vol', col] = side * (results.loc['Exec Vol', col] - results.loc['QWAP Vol', col])
+            #results.loc['QWAP Vol', col] = results.loc['Exec Vol', col] - results.loc['Slip to Exec DAdj QWAP Px', col] / (100 * vega)
+            results.loc['QWAP Vol', col] = arrival_mid_vol +  (qwap_mark - delta * (qwap_Umark - arrival_ul_mid) - arrival_mid) / (100 * vega)
+            results.loc['Slip to QWAP Vol', col] = side * (results.loc['QWAP Vol', col] - results.loc['Exec Vol', col])
             results.loc['Slip to QWAP Vol USD', col] = results.loc['Slip to QWAP Vol', col] * vega * results.loc['Filled Contracts', col] * 100 * mult
 
     if make_df['fillQuantity'].sum() > 0:
@@ -185,10 +184,11 @@ def calc_option_TCA_metrics(df, qwap_mark=None, qwap_Umark=None, formatted=True)
     return results
 
 if __name__ == '__main__':
-    execs = pd.read_csv('./FillData/TradesJan25.csv')
+    execs = pd.read_csv('./FillData/Trades20210125.csv')
     parents = execs['baseParentNumber'].unique()
     execs = execs[execs['baseParentNumber'] == parents[0]]
-    brkr = pd.read_csv('./FillData/BrkrStateJan26.csv')
+    process_time_cols(execs)
+    brkr = pd.read_csv('./FillData/BrkrState20210126.csv')
     brkr = brkr[brkr['baseParentNumber'] == parents[0]]
     if brkr.shape[0] > 0:
         qwap_mark = brkr.loc[brkr.index[0], 'brokerQwapMark']
@@ -198,7 +198,7 @@ if __name__ == '__main__':
     results = calc_option_TCA_metrics(execs, qwap_mark, qwap_Umark)
     # Save to csv
     title = make_title(execs)
-    results.to_csv(f'./TCA/{title}.csv')
+    #results.to_csv(f'./TCA/{title}.csv')
     
     
 

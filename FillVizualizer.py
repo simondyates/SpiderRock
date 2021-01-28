@@ -8,11 +8,11 @@ import plotly.offline as off
 import plotly.io as pio
 pio.renderers.default = 'browser'
 
-df = pd.read_csv('./FillData/Trades20210125.csv')
+df = pd.read_csv('./FillData/Trades20210122.csv')
 df = df[df['fillQuantity'] > 0]
 
 parents = df['baseParentNumber'].unique()
-df = df[df['baseParentNumber'] == parents[0]]
+df = df[df['baseParentNumber'] == parents[1]]
 
 # Convert Date Cols and add in microsecond cols
 process_time_cols(df)
@@ -61,7 +61,7 @@ df_vol['cumQuantity'] = df['cumQuantity']
 
 def plot_fill_graph(df, pct_y=False):
     max_fill = df['fillQuantity'].max()
-    scale_arrows = False
+    scale_arrows = True
 
     fig = make_subplots(rows=2, cols=1, row_heights=[1, 0.3], vertical_spacing=0.02,
                         shared_xaxes=True, specs=[[{'secondary_y': True}],
@@ -118,7 +118,7 @@ def plot_fill_graph(df, pct_y=False):
     fig.update_yaxes(title='Cumulative Fills', tickformat=',.0f', showgrid=False, secondary_y=True, row=1, col=1)
     fig.update_yaxes(title='Underlier Price', tickformat=',.0f', showgrid=False, secondary_y=True, row=2, col=1)
     fig.update_layout(title=title, height=1000, width=1000)
-    fig.show()
+    #fig.show()
     off.plot(fig, filename=f'./TCA/{title}.html')
 
-plot_fill_graph(df_adj, False)
+plot_fill_graph(df_vol, True)

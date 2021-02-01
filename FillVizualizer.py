@@ -8,11 +8,11 @@ import plotly.offline as off
 import plotly.io as pio
 pio.renderers.default = 'browser'
 
-df = pd.read_csv('./FillData/Trades20210122.csv')
+df = pd.read_csv('./FillData/Trades20210128.csv')
 df = df[df['fillQuantity'] > 0]
 
 parents = df['baseParentNumber'].unique()
-df = df[df['baseParentNumber'] == parents[1]]
+df = df[df['baseParentNumber'] == parents[0]]
 
 # Convert Date Cols and add in microsecond cols
 process_time_cols(df)
@@ -42,8 +42,9 @@ for col in cols[:2] + cols[-2:]:
 first_trade_vol = df.loc[df.index[0], 'fillVol']
 first_trade_adj_px = df_adj.loc[df_adj.index[0], 'fillPrice']
 
-arrival_mid_vol = first_trade_vol + (arrival_mid - first_trade_adj_px) / (100 * vega)
-arrival_mark_vol = first_trade_vol + (arrival_mark - first_trade_adj_px) / (100 * vega)
+if vega != 0:
+    arrival_mid_vol = first_trade_vol + (arrival_mid - first_trade_adj_px) / (100 * vega)
+    arrival_mark_vol = first_trade_vol + (arrival_mark - first_trade_adj_px) / (100 * vega)
 
 df_vol = pd.DataFrame(index = df.index, columns=cols)
 for col in cols[2:-2]:
@@ -118,7 +119,7 @@ def plot_fill_graph(df, pct_y=False):
     fig.update_yaxes(title='Cumulative Fills', tickformat=',.0f', showgrid=False, secondary_y=True, row=1, col=1)
     fig.update_yaxes(title='Underlier Price', tickformat=',.0f', showgrid=False, secondary_y=True, row=2, col=1)
     fig.update_layout(title=title, height=1000, width=1000)
-    #fig.show()
-    off.plot(fig, filename=f'./TCA/{title}.html')
+    fig.show()
+    #off.plot(fig, filename=f'./TCA/{title}.html')
 
 plot_fill_graph(df_vol, True)

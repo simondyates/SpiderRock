@@ -17,19 +17,19 @@ Exec DAdj Theo Arr Px,      0.00,    105.64,    105.64,Average of option fills d
 DAdj Theo Arr Px Range,      0.00,      0.69,      0.69,High minus low delta-adjusted fill price
 Theo U/L Px,      0.00,   3848.28,   3848.28,The weighted average mid of underlying at fill times
 Arr Slip Mid DAdj Theo Px,      0.00,     -0.16,     -0.16,Amount by which Exec DAdj Theo Px was more favorable than mid at order creation
-Arr Slip Mid DAdj Theo USD,         0,"    15,723","    15,723",Above field * contracts filled * contract multiplier
+Arr Slip Mid DAdj Theo USD,         0,"   -15,723","   -15,723",Above field * contracts filled * contract multiplier
 Arr Slip Mark DAdj Theo Px,      0.00,     -0.12,     -0.12,Amount by which Exec DAdj Theo Px was more favorable than SR mark at order creation
-Arr Slip Mark DAdj Theo USD,         0,"    11,589","    11,589",Above field * contracts filled * contract multiplier
-Exec Theo Vol,     0.00%,    18.21%,    18.21%,Implied volatility of Exec DAdj Theo Px at arrival mid price
+Arr Slip Mark DAdj Theo USD,         0,"   -11,589","   -11,589",Above field * contracts filled * contract multiplier
+Exec Theo Vol,     0.00%,    18.21%,    18.21%,Implied volatility of Exec DAdj Theo Arr Px at arrival mid price
 Vol Range,     0.00%,     0.11%,     0.11%,"All vol fields below correspond to the DAdj fields above, but expressed in vols"
 Arr Slip Mid Theo Vol,     0.00%,    -0.03%,    -0.03%,
 Arr Slip Mark Theo Vol,     0.00%,    -0.02%,    -0.02%,
 Exec DAdj Act Arr Px,      0.00,    105.57,    105.57,Average of option fills delta-adjusted using actual hedge fills back to arrival mid price
 Act U/L Px,      0.00,   3848.43,   3848.43,Weighted average actual hedge price
 Arr Slip Mid DAdj Act Px,      0.00,     -0.23,     -0.23,Amount by which Exec DAdj Act Px was more favorable than mid at order creation
-Arr Slip Mid DAdj Act USD,         0,"    23,205","    23,205",Above field * contracts filled * contract multiplier
+Arr Slip Mid DAdj Act USD,         0,"   -23,205","   -23,205",Above field * contracts filled * contract multiplier
 Arr Slip Mark DAdj Act Px,      0.00,     -0.19,     -0.19,Amount by which Exec DAdj Act Px was more favorable than SR mark at order creation
-Arr Slip Mark DAdj Act USD,         0,"    19,071","    19,071",Above field * contracts filled * contract multiplier
-Exec Act Vol,     0.00%,    18.20%,    18.20%,Implied volatility of Exec DAdj Act Px at arrival mid price
+Arr Slip Mark DAdj Act USD,         0,"   -19,071","   -19,071",Above field * contracts filled * contract multiplier
+Exec Act Vol,     0.00%,    18.20%,    18.20%,Implied volatility of Exec DAdj Act Arr Px at arrival mid price
 Arr Slip Mid Act Vol,     0.00%,    -0.04%,    -0.04%,
 Arr Slip Mark Act Vol,     0.00%,    -0.03%,    -0.03%,

@@ -85,7 +85,7 @@ def calc_option_TCA_metrics(df, qwap_mark=None, qwap_Umark=None, actualUvsAvg=No
                                                          'Amount by which Exec DAdj Theo QWAP Px was more favorable than the above price'),
                  'Slip to Exec DAdj Theo QWAP USD': field(comma,
                                                           'Above field * contracts filled * contract multiplier'),
-                 'Exec Theo Vol': field(pct2, 'Implied volatility of Exec DAdj Theo Px at arrival mid price'),
+                 'Exec Theo Vol': field(pct2, 'Implied volatility of Exec DAdj Theo Arr Px at arrival mid price'),
                  'Vol Range': field(pct2,
                                     'All vol fields below correspond to the DAdj fields above, but expressed in vols'),
                  'Arr Slip Mid Theo Vol': field(pct2, ''),
@@ -105,7 +105,7 @@ def calc_option_TCA_metrics(df, qwap_mark=None, qwap_Umark=None, actualUvsAvg=No
                  'Slip to Exec DAdj Act QWAP Px': field(price,
                                                         'Amount by which Exec DAdj Act QWAP Px was more favorable than the above price'),
                  'Slip to Exec DAdj Act QWAP USD': field(comma, 'Above field * contracts filled * contract multiplier'),
-                 'Exec Act Vol': field(pct2, 'Implied volatility of Exec DAdj Act Px at arrival mid price'),
+                 'Exec Act Vol': field(pct2, 'Implied volatility of Exec DAdj Act Arr Px at arrival mid price'),
                  'Arr Slip Mid Act Vol': field(pct2, ''),
                  'Arr Slip Mark Act Vol': field(pct2, ''),
                  'Act Slip to QWAP Vol': field(pct2, ''),
@@ -165,11 +165,11 @@ def calc_option_TCA_metrics(df, qwap_mark=None, qwap_Umark=None, actualUvsAvg=No
             fill_Umark = (df['fillUMid'] * df['fillQuantity']).sum() / df['fillQuantity'].sum()
             results.loc['Theo U/L Px', col] = fill_Umark
             results.loc['Arr Slip Mid DAdj Theo Px', col] = side * (arrival_mid - results.loc['Exec DAdj Theo Arr Px', col])
-            results.loc['Arr Slip Mid DAdj Theo USD', col] = side * results.loc['Arr Slip Mid DAdj Theo Px', col] * \
+            results.loc['Arr Slip Mid DAdj Theo USD', col] = results.loc['Arr Slip Mid DAdj Theo Px', col] * \
                                                              results.loc['Filled Contracts', col] * mult
             results.loc['Arr Slip Mark DAdj Theo Px', col] = side * (
                         arrival_mark - results.loc['Exec DAdj Theo Arr Px', col])
-            results.loc['Arr Slip Mark DAdj Theo USD', col] = side * results.loc['Arr Slip Mark DAdj Theo Px', col] * \
+            results.loc['Arr Slip Mark DAdj Theo USD', col] = results.loc['Arr Slip Mark DAdj Theo Px', col] * \
                                                               results.loc['Filled Contracts', col] * mult
             # Delta-adjusted QWAP
             if qwap_mark is not None:
@@ -199,10 +199,10 @@ def calc_option_TCA_metrics(df, qwap_mark=None, qwap_Umark=None, actualUvsAvg=No
             results.loc['Exec DAdj Act Arr Px', col] = results.loc['Exec Px', col] - delta * (actual_ul - arrival_ul_mid)
             results.loc['Act U/L Px', col] = actual_ul
             results.loc['Arr Slip Mid DAdj Act Px', col] = side * (arrival_mid - results.loc['Exec DAdj Act Arr Px', col])
-            results.loc['Arr Slip Mid DAdj Act USD', col] = side * results.loc['Arr Slip Mid DAdj Act Px', col] * \
+            results.loc['Arr Slip Mid DAdj Act USD', col] = results.loc['Arr Slip Mid DAdj Act Px', col] * \
                                                             results.loc['Filled Contracts', col] * mult
             results.loc['Arr Slip Mark DAdj Act Px', col] = side * (arrival_mark - results.loc['Exec DAdj Act Arr Px', col])
-            results.loc['Arr Slip Mark DAdj Act USD', col] = side * results.loc['Arr Slip Mark DAdj Act Px', col] * \
+            results.loc['Arr Slip Mark DAdj Act USD', col] = results.loc['Arr Slip Mark DAdj Act Px', col] * \
                                                              results.loc['Filled Contracts', col] * mult
             # Delta-adjusted QWAP
             if qwap_mark is not None:

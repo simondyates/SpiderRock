@@ -1,0 +1,185 @@
+TABLE_NAME,COLUMN_NAME,ORDINAL_POSITION,COLUMN_TYPE,IS_NULLABLE,COLUMN_DEFAULT,COLUMN_COMMENT
+msgsrparentbrkrstate,accnt,1,VARCHAR(16),NO,NULL,NULL
+msgsrparentbrkrstate,activeSeconds,172,FLOAT,NO,NULL,"number of seconds that the parent order was active"
+msgsrparentbrkrstate,aloneSeconds,174,FLOAT,NO,NULL,"number of seconds with one or more working child orders that make up 100% of nbbo"
+msgsrparentbrkrstate,altAccnt,24,VARCHAR(255),NO,NULL,"alternate (client assigned) "long" account string (optional)"
+msgsrparentbrkrstate,altOrderId,22,VARCHAR(255),NO,NULL,"alternate order ID (usually clOrdId from client)"
+msgsrparentbrkrstate,altUserName,25,VARCHAR(24),NO,NULL,"alternate (client assigned) user name (optional)"
+msgsrparentbrkrstate,autoHedge,81,"ENUM('None','Static','AutoMid','AutoCrx','AutoTrn','SpdrAuto','Spdr10S','Spdr30S','Spdr90S','Spdr5M','Spdr30M','SpdrDay','SmartFast','SmartNorm','FastCrx','FastDark','SlowDark','AlphaVwap1pct','AlphaVwap2pct','AlphaVwap5pct','AlphaVwap25pct','Custom','AwayAlgo')",NO,NULL,NULL
+msgsrparentbrkrstate,avgFillPrice,58,DOUBLE,NO,NULL,"average fill price"
+msgsrparentbrkrstate,avgFillUPrice,59,DOUBLE,NO,NULL,"average fill underlier price"
+msgsrparentbrkrstate,avgFillVol,61,FLOAT,NO,NULL,"average fill volatility"
+msgsrparentbrkrstate,baseParentNumber,18,BIGINT,NO,NULL,NULL
+msgsrparentbrkrstate,bestLimitOffset,72,FLOAT,NO,NULL,"(possible price improvement) (gap between best price and init/limit price) (Face/Matrix orders)"
+msgsrparentbrkrstate,brokerCounter,102,INT,NO,NULL,"number of times order checked by broker monitor (note: most checks result in no action)]"
+msgsrparentbrkrstate,brokerQwapMark,163,FLOAT,NO,NULL,"average quote mid-market (duration of parent order)"
+msgsrparentbrkrstate,brokerQwapUMark,164,FLOAT,NO,NULL,"average underlier quote mid-market (duration of parent order)"
+msgsrparentbrkrstate,brokerState,101,"ENUM('None','Start','MarNotEnabled','CloseRequest','WaitTrigger','ChkBrkrFail','NotValid','StepChk','ResetOff','ResetOn','ResetActive','TwapChkWait','TwapChk','VwapChk','VwapVlmFail','CleanupBrkr','AlgoNormal','StkClosed','StkHalted','StkNotOpn','FutClosed','FutHalted','FutNotOpn','TryCxlChildrenCont','BrkrPendNew','BrkrPendClose','BrkrPreOpnQ','BrkrPendRpl','BrkrWaitTrig','TryCxlChildrenTerm','PendChildCxl','Done','BrkrClosing','BrkrClosed','BrkrRejected','MktHalted','LimitErr','RiskHold','SecTypeErr','MktDataErr','LmtErr','StkNotRdy','MinUPrcLmt','MaxUPrcLmt','InvldSysEnv','InvldRunStatus','InvldEngineType','MarketClosed','GoodTillDttmReached','TestExpired','AutoHedgeExpired','EngineClosed','EngPreOpn','OutsideMktDay','OutsideMktDay2','MaxChildRejects','IOCExpired','ProgressTimeout','NoStreetFixSession','StreetFixNotLoggedIn','StreetFixTimeout','HedgeHold','NewParent','AddUpdate','ClearAction','UpdateLegLimit','Exception','AlgoWorking','ReviewReject','ReviewPending','ReviewTimeout','PendTrigger','PendReview','PendCxlRpl','Suspended')",NO,NULL,"broker monitor state"
+msgsrparentbrkrstate,brokerVwapMark,161,FLOAT,NO,NULL,"trade weighted average price (duration of parent order)"
+msgsrparentbrkrstate,brokerVwapUMark,162,FLOAT,NO,NULL,"option-trade weighted average underlier price (duration of parent order)"
+msgsrparentbrkrstate,cex1,119,"INT UNSIGNED",NO,NULL,"bit mask of all exchanges where we are at this price"
+msgsrparentbrkrstate,cex2,123,"INT UNSIGNED",NO,NULL,"bit mask of all exchanges where we are at this price"
+msgsrparentbrkrstate,clientFirm,16,VARCHAR(16),NO,NULL,"SR client firm string"
+msgsrparentbrkrstate,cMore,125,"TINYINT UNSIGNED",NO,NULL,"number of additional child orders at inferior prices (if any)"
+msgsrparentbrkrstate,cnDd,131,FLOAT,NO,NULL,"$delta per contract"
+msgsrparentbrkrstate,cnDe,130,FLOAT,NO,NULL,"delta per contract"
+msgsrparentbrkrstate,cnGa,133,FLOAT,NO,NULL,NULL
+msgsrparentbrkrstate,cnPr,135,FLOAT,NO,NULL,"premium per contract"
+msgsrparentbrkrstate,cnt1,120,"TINYINT UNSIGNED",NO,NULL,"number of child orders at price level #1"
+msgsrparentbrkrstate,cnt2,124,"TINYINT UNSIGNED",NO,NULL,"number of child orders at price level #2"
+msgsrparentbrkrstate,cnTh,134,FLOAT,NO,NULL,NULL
+msgsrparentbrkrstate,cnUPrc,129,FLOAT,NO,NULL,NULL
+msgsrparentbrkrstate,cnVe,132,FLOAT,NO,NULL,"vega per contract"
+msgsrparentbrkrstate,cnVol,127,FLOAT,NO,NULL,NULL
+msgsrparentbrkrstate,cnYrs,128,FLOAT,NO,NULL,NULL
+msgsrparentbrkrstate,cpx1,117,FLOAT,NO,NULL,"child price level #1"
+msgsrparentbrkrstate,cpx2,121,FLOAT,NO,NULL,"child price level #2"
+msgsrparentbrkrstate,csz1,118,INT,NO,NULL,"cumulative size represented at this price"
+msgsrparentbrkrstate,csz2,122,INT,NO,NULL,"cumulative size represented at this price"
+msgsrparentbrkrstate,cumFillDDelta,64,FLOAT,NO,NULL,"cumulative fill $Delta"
+msgsrparentbrkrstate,cumFillQuantity,60,INT,NO,NULL,"cumulative fill quantity"
+msgsrparentbrkrstate,cumFillTheta,63,FLOAT,NO,NULL,"cumulative fill theta"
+msgsrparentbrkrstate,cumFillVega,62,FLOAT,NO,NULL,"cumulative fill vega"
+msgsrparentbrkrstate,ddMult,136,FLOAT,NO,NULL,NULL
+msgsrparentbrkrstate,execEngineType,14,"ENUM('None','Core','Pair')",NO,NULL,NULL
+msgsrparentbrkrstate,expiryKey,126,VARCHAR(6),NO,NULL,NULL
+msgsrparentbrkrstate,externHedgeExDest,93,VARCHAR(12),NO,NULL,"external broker exDest (only used if orderHandling=Extern)			# Should match FixRoutingTable.destination type (eg. #Nighthawk)"
+msgsrparentbrkrstate,externHedgeParams,94,VARCHAR(255),NO,NULL,"external algo names/parameters (usually just an algo name)			# usually copied from the FixRoutingTable.externParams"
+msgsrparentbrkrstate,goodTillDttm,55,DATETIME,NO,"1900-01-01 00:00:00","[expected] order expiration date/time (most recent parent order in cxl/replace chain)"
+msgsrparentbrkrstate,goodTillDttm_us,56,"INT UNSIGNED",NO,0,"[expected] order expiration date/time (most recent parent order in cxl/replace chain)"
+msgsrparentbrkrstate,groupingCode,12,BIGINT,NO,NULL,NULL
+msgsrparentbrkrstate,hedgeBetaRatio,90,FLOAT,NO,NULL,"auto-hedge ratio [from parent order (if supplied) or computed by SR]"
+msgsrparentbrkrstate,hedgeInstrument,82,"ENUM('None','Default','FrontMonth','Stock','Future')",NO,NULL,"auto-hedge instrument (from parent order)"
+msgsrparentbrkrstate,hedgeScope,91,"ENUM('None','Accnt','RiskGroup')",NO,NULL,"hedge group scope [RiskGroup or Accnt]"
+msgsrparentbrkrstate,hedgeSecKey_at,83,"ENUM('None','EQT','IDX','BND','CUR','COM','FUT','SYN','WAR','FLX','MUT','SPD','MM','MF','COIN','TOKEN')",NO,NULL,"auto-hedge sec key (if any)"
+msgsrparentbrkrstate,hedgeSecKey_dy,88,"TINYINT UNSIGNED",NO,NULL,"auto-hedge sec key (if any)"
+msgsrparentbrkrstate,hedgeSecKey_mn,87,"TINYINT UNSIGNED",NO,NULL,"auto-hedge sec key (if any)"
+msgsrparentbrkrstate,hedgeSecKey_tk,85,VARCHAR(12),NO,NULL,"auto-hedge sec key (if any)"
+msgsrparentbrkrstate,hedgeSecKey_ts,84,"ENUM('None','SR','NMS','CME','ICE','CFE','CBOT','TD','NYMEX','COMEX','RUT','CBOE','ISE','ARCA','NYSE','OTC','GDAX','BSTAMP','KRAKEN','TST','USR1','USR2','USR3','NSDQ','MFQS','PHLX','MIAX','TSE','DJI')",NO,NULL,"auto-hedge sec key (if any)"
+msgsrparentbrkrstate,hedgeSecKey_yr,86,"SMALLINT UNSIGNED",NO,NULL,"auto-hedge sec key (if any)"
+msgsrparentbrkrstate,hedgeSecType,89,"ENUM('None','Stock','Future','Option','MLeg')",NO,NULL,"auto-hedge sec type (Stock or Future)"
+msgsrparentbrkrstate,hedgeTIF,92,"ENUM('None','Day','IOC','GTD','ExtDay','Week','ExtWeek')",NO,NULL,"time in force for the autohedge order (can be Day or ExtDay) [None defaults to pOrder.timeInForce]"
+msgsrparentbrkrstate,isFlagged,27,"ENUM('None','Yes','No')",NO,NULL,"broker state records is flagged for action (user alert only)"
+msgsrparentbrkrstate,isPermanentlyClosed,45,"ENUM('None','Yes','No')",NO,NULL,"indicates that this broker is permanently closed (cannot be cxl/replaced or re-opened) [auto-hedge orders only]"
+msgsrparentbrkrstate,lastChildEvent,112,"ENUM('None','OK','ChildError','EnvNotValid','NoOrdSide','OptNotReady','ChildErrHold','ImmCxl','MaxChildOrders','RollVlm','MoveVlm')",NO,NULL,"[enum] last event code from broker/child order handler(s)"
+msgsrparentbrkrstate,lastChildRejectDttm,113,DATETIME,NO,"1900-01-01 00:00:00","last child order reject dttm (if any)"
+msgsrparentbrkrstate,lastChildRejectDttm_us,114,"INT UNSIGNED",NO,0,"last child order reject dttm (if any)"
+msgsrparentbrkrstate,lastChildRejectText,115,VARCHAR(255),NO,NULL,"last child order reject reason/text (if any)"
+msgsrparentbrkrstate,lastExternRiskReject,48,DATETIME,NO,"1900-01-01 00:00:00",NULL
+msgsrparentbrkrstate,lastExternRiskReject_us,49,"INT UNSIGNED",NO,0,NULL
+msgsrparentbrkrstate,lastExternRiskText,47,VARCHAR(255),NO,NULL,"last external (exch?) risk management reject"
+msgsrparentbrkrstate,lastFillDttm,65,DATETIME,NO,"1900-01-01 00:00:00",NULL
+msgsrparentbrkrstate,lastFillDttm_us,66,"INT UNSIGNED",NO,0,NULL
+msgsrparentbrkrstate,leavesQuantity,57,INT,NO,NULL,"current child order leaves quantity (quantity actively working in the market;all child orders)"
+msgsrparentbrkrstate,limitErr,70,"ENUM('None','LmtPrcRng','NoStkNbbo','LowStkNbbo','WideStkNbbo','CrossStkNbbo','VolCalcErr','RefUPrcErr','RefDeltaRng','dUPrcRng','BadLmtType','LmtPrcErr','BadCent','CentVolLmt','BadSurf','CentPrcLmt','NoOptNbbo','WideOptNbbo','dYrsRng','BadRefDelta','BadStkNbbo','InvldMkt','BadVolLmt','CrossOptNbbo','NoFutNbbo','LowFutNbbo','WideFutNbbo','CrossFutNbbo','InvldRefMkt','TiedRtnRng','InvldAdjType','ProdDefErr','PrcBandViol','SysErr','NoQteProb','ProbRng','LmtClass','NoAlphaLvl','SurfErr','ProbErr','BadMult','NoUPrc','BadAlphaLvl','LegLimitErr','AuxLimit','NoFutMktSz','FutMktNotOpn','StaleProb','NoStkObj','NoFutObj','NoOptObj','dOpxGaRng','FadeProb','SurfNoTrd','SurfAge','SurfMktSess','SurfVolRng','SurfPrc','NoSurface','SurfLowCCnt','SurfLowPCnt','SurfFitPrcErr','SurfBidAskMiss','SurfLowCounter','SurfDefaultSkew','SurfSessionMiss','SurfBaseErr','SurfSwitchDelay','SurfWideMktV','SurfWideMktP','SurfUWidthEma','SurfCCntEma','SurfPCntEma','SurfVWidthEma','SurfPWidthEma','SurfWideUMkt','LowOptPrc','LegURng','WideMarket','dOpxThRng')",NO,NULL,NULL
+msgsrparentbrkrstate,limitErrDesc,71,VARCHAR(255),NO,NULL,NULL
+msgsrparentbrkrstate,limitPrice,69,DOUBLE,NO,NULL,"simple limit"
+msgsrparentbrkrstate,makeCounter,104,INT,NO,NULL,"number of times order checked by post handler (note: most checks result in no action)"
+msgsrparentbrkrstate,makeLimitErr,76,"ENUM('None','LmtPrcRng','NoStkNbbo','LowStkNbbo','WideStkNbbo','CrossStkNbbo','VolCalcErr','RefUPrcErr','RefDeltaRng','dUPrcRng','BadLmtType','LmtPrcErr','BadCent','CentVolLmt','BadSurf','CentPrcLmt','NoOptNbbo','WideOptNbbo','dYrsRng','BadRefDelta','BadStkNbbo','InvldMkt','BadVolLmt','CrossOptNbbo','NoFutNbbo','LowFutNbbo','WideFutNbbo','CrossFutNbbo','InvldRefMkt','TiedRtnRng','InvldAdjType','ProdDefErr','PrcBandViol','SysErr','NoQteProb','ProbRng','LmtClass','NoAlphaLvl','SurfErr','ProbErr','BadMult','NoUPrc','BadAlphaLvl','LegLimitErr','AuxLimit','NoFutMktSz','FutMktNotOpn','StaleProb','NoStkObj','NoFutObj','NoOptObj','dOpxGaRng','FadeProb','SurfNoTrd','SurfAge','SurfMktSess','SurfVolRng','SurfPrc','NoSurface','SurfLowCCnt','SurfLowPCnt','SurfFitPrcErr','SurfBidAskMiss','SurfLowCounter','SurfDefaultSkew','SurfSessionMiss','SurfBaseErr','SurfSwitchDelay','SurfWideMktV','SurfWideMktP','SurfUWidthEma','SurfCCntEma','SurfPCntEma','SurfVWidthEma','SurfPWidthEma','SurfWideUMkt','LowOptPrc','LegURng','WideMarket','dOpxThRng')",NO,NULL,NULL
+msgsrparentbrkrstate,makeLimitPrice,75,DOUBLE,NO,NULL,"make limit"
+msgsrparentbrkrstate,makeProbLimit,73,FLOAT,NO,NULL,NULL
+msgsrparentbrkrstate,makeState,103,"ENUM('None','Posting','PendPost','OffMkt','BadFirmType','NoExchSet','BadOrder','NoPostSize','MaxActive','ActWait','SendHold','LmtErr','LmtRng','LmtPx','PendAct','MaxSize','OddLot','IWait','Quiet','Fade','InVld','MaxPSz','MaxOrd','MaxPxLv','MaxPec1','MaxPec2','MaxPec3','TryPxLvl1','TryPxLvl2','TryPxLvl3','DonePxLvl1','DonePxLvl2','DonePxLvl3','SendPxLvl1','SendPxLvl2','SendPxLvl3','NoExchQte','CrtErr','SizeWait','NbboHold','ExchHold','CxlRpl','SndErr','OldMdl','ExchRte','PrcHold','ModelErr','LowProb','PostWith','PostBhnd','NoModel','NoOptQte','NoStkQte','RiskHold','SurfHold','NoFutQte','NoStkPrt','PostClr','NoQte','PHold','StkEnv','OptEnv','FutEnv','TryExch','CkSend','PredMiss','SysEnv','NoExchAvail','PostWide','ZeroLmt','LockSkip','ProbLmt','PrcLmt','NoActSz','CkAdd','Locked','PendCxl','NewWait','EnterLimit','EnterPost','EnterFlow','EnterMake','EnterSeeker','EnterMatrix','EnterLegger','SendOK','SendFail','Except','Filled','TrySend','BadMkt','SysError','MktDataErr','TickSizeErr','NullParent','NoUPrc','TryTake','NoProb','SendThrtl','ProbErr','PendClear','MaxExCnt','MaxExpose','NoExDest','ReachDelay','ReachWait','ClearWait','CxlWait','LeavesErr','FeeWait','ActMaker','WthFade','SyncHold','AuctionDone','BadUDefKey','UDefReject','PendUDef','ExchRej','TrySendSprd','Working','RejDelay','NoStepSz','UpdtLegBrkr','LegNewWait','LegNoChng','LegBadMkt','LegImprvDelay','LegUpdtLmt','LegUpdtErr','NoExchList','PendTake','LeggerDone','MaxChildren','RiskCxlThrtl','FlashWait','NoImpRm','RollVlm','MoveVlm','AccelTake','NoMassQte','MktNotOpen','CreateSprd','InvldExch','RFQTimeout','TrySendRFQ','EnterResponder','CreateErr','LockFail','NoRoute','UnkCrossId','SelfTrade','ImpactHold','LegWait','TwapWait','InvalidSpread','PegHold','OffPeg','ChildCxlHold','CheckBrkr','FaceDone','CtrlSize','FacePromote','MatrixDone','TakeVlmHold','NoExchRoute','ExchNoMake','ExchWrking','ExchSingle','ExchMakeHold','ExchBrkrSkip','ExchNoQte','ExchMaxFee','ExchOffMkt','ExchNoImprv','FlashInitErr','FlashCalcErr','MarketClosed','ExchActOrd','ExchMaxFeeP','ExchNoRte','TakeFail','BestPxLmt','PennyProtected','WaitSquare','NotActive','RteOpnLmt','NoTiedMaker','WaitTrigger','CrossPending','NoResponders','SendThrtlHiLat','SendThrtlNewWin','SendThrtlRteQGap','SendThrtlRteQSz','SendThrtlRteQAge','ExRiskMgmt','RouteDayMax')",NO,NULL,"[enum] current state of non-marketable order handler (maker)"
+msgsrparentbrkrstate,makeSurfOffset,74,FLOAT,NO,NULL,NULL
+msgsrparentbrkrstate,maxProgress,97,"ENUM('None','Initialize','Rejected','PreOpen','RiskHold','Working','ChkRte','RteRej','WaitAction','InMarket','Filling','Filled','PendingClose','Closed','HedgeHold')",NO,NULL,"maximum point of progress for most recent parent order"
+msgsrparentbrkrstate,maxProgressDetail,98,VARCHAR(255),NO,NULL,"additional detail on point of maximum progress"
+msgsrparentbrkrstate,maxProgressTime,99,DATETIME,NO,"1900-01-01 00:00:00","time of last max progress advance"
+msgsrparentbrkrstate,maxProgressTime_us,100,"INT UNSIGNED",NO,0,"time of last max progress advance"
+msgsrparentbrkrstate,mktCrossCounter,110,INT,NO,NULL,"number of times order checked by market cross handler (note: most checks result in no action)"
+msgsrparentbrkrstate,mktCrossState,109,"ENUM('None','Hold','NoHandler','OrderPending','CheckPending','BrkrNotActive','ExchHold','InvldBrkr','Filled','MktOpnCutoff','MktClsCutoff','InvldHandler','SendHold','NoAvailSize','NoRiskSize','LimitErr','MaxChildOrders','OpenOrder','InvldCrossType','CanSendFail','TrySend','CreateErr','SendErr','OrderPosted','ChildCxlHold','NoRoute','AuctionClosed','RespondWait')",NO,NULL,"[enum] current state of mkt cross handler (if any)"
+msgsrparentbrkrstate,mktRespCounter,108,INT,NO,NULL,"number of times order checked by market response handler (note: most checks result in no action)"
+msgsrparentbrkrstate,mktRespState,107,"ENUM('None','ChildCxlHold')",NO,NULL,"[enum] current state of response handler (if any)"
+msgsrparentbrkrstate,nbboAsk,34,DOUBLE,NO,NULL,"current option nbbo ask (at time of record publish)"
+msgsrparentbrkrstate,nbboAskSz,36,INT,NO,NULL,"current option nbbo cum ask size (at time of record publish)"
+msgsrparentbrkrstate,nbboBid,33,DOUBLE,NO,NULL,"current option nbbo bid (at time of record publish)"
+msgsrparentbrkrstate,nbboBidSz,35,INT,NO,NULL,"current option nbbo cum bid size (at time of record publish)"
+msgsrparentbrkrstate,netAccDayDDelta,144,FLOAT,NO,NULL,"net (+/-) account day $delta;cumulative day $delta (stock, future, option) for the account this order is associated with"
+msgsrparentbrkrstate,netAccDayWtVega,143,FLOAT,NO,NULL,"net (+/-) account day wtVega;cumulative day wtVega (vol * vega / sqrt(T)) for the account this order is associated with"
+msgsrparentbrkrstate,netExpDayWtVega,147,FLOAT,NO,NULL,"net (+/-) expiration day wtVega;cumulative weighted vega (vol * vega / sqrt(T)) for the ticker+expiration this orders is associated with"
+msgsrparentbrkrstate,netGrpDayContracts,151,INT,NO,NULL,"net (+/-) day risk group contracts;cumulative (futures, options) for the riskGroupId+account this order is associated with"
+msgsrparentbrkrstate,netGrpDayDDelta,149,FLOAT,NO,NULL,"net (+/-) day risk group $delta;cumulative (stock, futures, options) for the riskGroupId+account this order is associated with"
+msgsrparentbrkrstate,netGrpDayPremium,150,FLOAT,NO,NULL,"net (+/-) day risk group premium over parity;cumulative (options) for the riskGroupId+account this order is associated with"
+msgsrparentbrkrstate,netGrpDayVega,148,FLOAT,NO,NULL,"net (+/-) day risk group vega;cumulative (options) for the riskGroupId+account this order is associated with"
+msgsrparentbrkrstate,netGrpRMetric1,152,FLOAT,NO,NULL,"net (+/-) day risk group rmetric1;cumulative (options) for the riskGroupId+account this order is associated with"
+msgsrparentbrkrstate,netGrpRMetric2,153,FLOAT,NO,NULL,"net (+/-) day risk group rmetric2;cumulative (options) for the riskGroupId+account this order is associated with"
+msgsrparentbrkrstate,netGrpRMetric3,154,FLOAT,NO,NULL,"net (+/-) day risk group rmetric3;cumulative (options) for the riskGroupId+account this order is associated with"
+msgsrparentbrkrstate,netGrpRMetric4,155,FLOAT,NO,NULL,"net (+/-) day risk group rmetric4;cumulative (options) for the riskGroupId+account this order is associated with"
+msgsrparentbrkrstate,netGrpRMetric5,156,FLOAT,NO,NULL,"net (+/-) day risk group rmetric5;cumulative (options) for the riskGroupId+account this order is associated with"
+msgsrparentbrkrstate,netSymDayDDelta,146,FLOAT,NO,NULL,"net (+/-) symbol day $delta;cumulative $delta (stock, futures, options) for the ticker+account this order is associated with"
+msgsrparentbrkrstate,netSymDayWtVega,145,FLOAT,NO,NULL,"net (+/-) symbol day (time weighted) vega;cumulative wt vega (options only) for the ticker+account this order is associated with"
+msgsrparentbrkrstate,numExternRiskHold,46,INT,NO,NULL,"num external risk management rejects received"
+msgsrparentbrkrstate,numImprvChld,171,INT,NO,NULL,"number of child orders that improved an existing market"
+msgsrparentbrkrstate,numMakeThrottleSkips,179,INT,NO,NULL,"number of childs orders not send to market dues to outbound lines being in a queued/throttled state"
+msgsrparentbrkrstate,numNewOrders,159,INT,NO,NULL,"number of child orders generated by this broker (all parent orders)"
+msgsrparentbrkrstate,numParentLimits,160,"SMALLINT UNSIGNED",NO,NULL,"number of parent limit messages received for this broker"
+msgsrparentbrkrstate,numRiskCancels,176,INT,NO,NULL,"number of child orders cancels for risk reasons"
+msgsrparentbrkrstate,numUpdates,182,INT,NO,NULL,"number of record updates (cumulative for the day)"
+msgsrparentbrkrstate,orderActiveSize,52,INT,NO,NULL,"total activated size (total size released for execution) (-1 = all available size)"
+msgsrparentbrkrstate,orderRefSDiv,39,FLOAT,NO,NULL,NULL
+msgsrparentbrkrstate,orderRefSDivType,40,"ENUM('None','Live','Locked')",NO,NULL,NULL
+msgsrparentbrkrstate,orderSide,13,"ENUM('None','Buy','Sell')",NO,NULL,NULL
+msgsrparentbrkrstate,orderSize,51,INT,NO,NULL,"order size of most recent parent order"
+msgsrparentbrkrstate,packageId,23,BIGINT,NO,NULL,"groups related order/brokers together (eg. Legger w/MLeg Parent)"
+msgsrparentbrkrstate,parentNumber,17,BIGINT,NO,NULL,"SR parent number"
+msgsrparentbrkrstate,pointValue,142,FLOAT,NO,NULL,"$NLV value of a single point change in display premium (pointValue = tickValue / tickSize)"
+msgsrparentbrkrstate,priceFormat,137,"ENUM('None','N0','N1','N2','N3','N4','N5','N6','N7','F4','F8','Q8','F16','F32','H32','Q32','F64','H64','FullPenny','PartPenny','PartNickle','EQT','V1','V2','V3','V4','V5','V6','V7','V8','V9','V10','V11','V12','V13','V14','V15','A0','A1','A2','A3','A4','A5','A6','A7')",NO,NULL,"option price format code"
+msgsrparentbrkrstate,progressRuleDetail,111,VARCHAR(255),NO,NULL,"Twap/Vwap progress detail"
+msgsrparentbrkrstate,qwapDnPnL,169,FLOAT,NO,NULL,"qwapPnL - uDriftQwapPnL"
+msgsrparentbrkrstate,qwapPnL,168,FLOAT,NO,NULL,"dir * qty * (brokerQwapMark - avgFillPrice)"
+msgsrparentbrkrstate,riskGroupId,19,BIGINT,NO,NULL,"all orders with the same riskGroupId share a common set of risk counters;.Grp. risk limits apply to these shared counters"
+msgsrparentbrkrstate,riskHoldSeconds,177,FLOAT,NO,NULL,"number of seconds with parent order active but on risk hold (zero child order risk size)"
+msgsrparentbrkrstate,riskLimitDesc,68,"ENUM('None','MaxAccHC','MinAccDD','MaxAccDD','MinAccWtVe','MaxAccWtVe','AbsAccWtVe','MinAccPr','MaxAccPr','AbsAccPr','MaxSymHC','MinSymDD','MaxSymDD','MinSymWtVe','MaxSymWtVe','AbsSymWtVe','MinSymPr','MaxSymPr','AbsSymPr','MaxGrpDD','MinGrpDD','MaxGrpVe','MinGrpVe','MaxGrpPr','MinGrpPr','MaxGrpCn','MinGrpCn','AbsGrpVe','AbsGrpPr','AbsGrpCn','MinExpWtVe','MaxExpWtVe','MarNoRec','MarDisabled','MarTotExp','MarCrdtAcc','MarCrdtDay','MarClsOnly','MarNoRec2','MarDisabled2','MarTotExp2','MarCrdtAcc2','MarCrdtDay2','MarClsOnly2','MarNoRec3','MarDisabled3','MarTotExp3','MarCrdtAcc3','MarCrdtDay3','MarClsOnly3','UserHC','MaxUserDD','MinUserDD','MaxUserWtVe','MinUserWtVe','MaxUserPr','MinUserPr','AbsUserWtVe','AbsUserPr','SysErr','StkErr','FutErr','OptErr','SSaleErr','SSaleRstr','StkSellLmt','Locate','StkRstct','SizeCap','ZeroCross','PreOpnQ','TrgWait','WaitStart','WaitTrigger','LegStep','TwapStep','MktNotReady','MinSpdrDD','MaxSpdrDD','MinSpdrWtVe','MaxSpdrWtVe','AbsSpdrWtVe','SpdrHC','AbsUSymDD','AbsUSymNv','MaxUSymDD','MaxUSymNv','MinUSymDD','MinUSymNv','USymHC','MaxUSymWtVe','MinUSymWtVe','AbsUSymWtVe','AbsUserDD','DayUserCn','DayUserNv','DayUSymCn','DayUSymNv','DaySpdrCn','DaySpdrNv','AbsSpdrDD','MinSpdrNv','MaxSpdrNv','MinUserNv','MaxUserNv','AbsGrpRm1','MinGrpRm1','MaxGrpRm1','MinGrpRm2','MaxGrpRm2','MinGrpRm3','MaxGrpRm3','MinGrpRm4','MaxGrpRm4','MinGrpRm5','MaxGrpRm5','OffMkt','SpdrFutMissing','SpdrFutDisabled','AbsFutPosDe','AbsFutDayDe','FutDayDeBot','FutDayDeSld','SpdrOptMissing','SpdrOptDisabled','AbsOptPosDe','AbsOptDayDe','OptDayDeBot','OptDayDeSld','SpdrExpMissing','SpdrExpDisabled','AbsExpPosDe','AbsExpDayDe','ExpDayDeBot','ExpDayDeSld','MaxMktSize','MaxMnySize','AbsSpdrSh','AbsSpdrFc','AbsSpdrNv','AbsUserSh','AbsUserFc','AbsUserNv','AbsUSymSh','AbsUSymFc','NoStkBrw','BadMkt','BadLmt','NoAltOrdId','InvldBrkr','MaxChildOrders','MktHalted','UPrcErr','MinUBid','MaxUAsk','PreStart','MaxSpdrVega','MinSpdrVega','AbsSpdrVega','MaxUserVega','MinUserVega','AbsUserVega','MaxUSymVega','MinUSymVega','AbsUSymVega','MaxSymVega','MinSymVega','ClntRteDn','ActiveSize','MinUDn15','MinUUp15','MinUDn50','MinUUp50','MktClosed','NoRiskCounter','NoDDeltaMult')",NO,NULL,"reason for size reduction"
+msgsrparentbrkrstate,riskLimitSize,67,INT,NO,NULL,"risk limit size (maximum size to nearest risk limit)"
+msgsrparentbrkrstate,riskThrtlSeconds,178,FLOAT,NO,NULL,"number of seconds with parent order active but in risk throttle condition (temporary hold after fast/mass risk cancel)"
+msgsrparentbrkrstate,secKey_at,2,"ENUM('None','EQT','IDX','BND','CUR','COM','FUT','SYN','WAR','FLX','MUT','SPD','MM','MF','COIN','TOKEN')",NO,NULL,NULL
+msgsrparentbrkrstate,secKey_cp,9,"ENUM('Call','Put','Pair')",NO,NULL,NULL
+msgsrparentbrkrstate,secKey_dy,7,"TINYINT UNSIGNED",NO,NULL,NULL
+msgsrparentbrkrstate,secKey_mn,6,"TINYINT UNSIGNED",NO,NULL,NULL
+msgsrparentbrkrstate,secKey_tk,4,VARCHAR(12),NO,NULL,NULL
+msgsrparentbrkrstate,secKey_ts,3,"ENUM('None','SR','NMS','CME','ICE','CFE','CBOT','TD','NYMEX','COMEX','RUT','CBOE','ISE','ARCA','NYSE','OTC','GDAX','BSTAMP','KRAKEN','TST','USR1','USR2','USR3','NSDQ','MFQS','PHLX','MIAX','TSE','DJI')",NO,NULL,NULL
+msgsrparentbrkrstate,secKey_xx,8,DOUBLE,NO,NULL,NULL
+msgsrparentbrkrstate,secKey_yr,5,"SMALLINT UNSIGNED",NO,NULL,NULL
+msgsrparentbrkrstate,secType,10,"ENUM('None','Stock','Future','Option','MLeg')",NO,NULL,NULL
+msgsrparentbrkrstate,spdrBrokerStatus,41,"ENUM('None','Updating','Active','Closing','Closed','Rejected')",NO,NULL,NULL
+msgsrparentbrkrstate,spdrCloseReason,43,"ENUM('None','Cancelled','Filled','Replaced','Expired','Limit','System','LegReject','DoneForDay','IOCExpire','UserCxl','NoProgress','TooManyRej','ReplReject','AlgoClose','Restart','InvldParentLimit','FilledRepl','ForceClose','DmaReject','DmaExpire','DmaBrkrCxl','ReviewReject','MarketState','AlgoReject','ReviewTimeout','ChildReject','ChildCancel','ReviewClose','UPrcRange')",NO,NULL,"close reason of most recent parent order"
+msgsrparentbrkrstate,spdrComment,50,VARCHAR(255),NO,NULL,NULL
+msgsrparentbrkrstate,spdrMktState,116,"ENUM('None','PreOpen','Open','Closed','Halted','EngNotOpen','Exception')",NO,NULL,"[enum] market state"
+msgsrparentbrkrstate,spdrOrderStatus,42,"ENUM('PendNew','New','PendClose','Closed','Rejected','SendReject')",NO,NULL,"status of the most recent parent order handled by this broker"
+msgsrparentbrkrstate,spdrRejectReason,44,"ENUM('None','AccntHold','UnknwnOpt','UnknwnStk','Expired','BadSize','BadOrdNum','DupOrdNum','BadVolPx','BadLmtType','BadMktPrc','BadLimit','SysReject','TestOrder','CustType','NoFirmPos','BadCent','NoSurface','UnknwnAcc','UnknwnRoot','OrdSpacing','BadOptMkt','BadStkMkt','SendFailed','BadExpose','BadPrem','NoOptLeg','Min2Leg','Max6Leg','BadStkSz','BadRatio','BadLegID','DupLegID','MixedRoots','OffMkt','CentVol','CentLeg','CentRng','CentSAtm','CentSpln','CentErr','NoRiskGrp','BadDDivs','NoPricer','CalcErr','TwapLate','TwapTime','NoAcctMap','UserUnk','UserHold','GTCHold','SysException','StkCrossed','BadOrdType','BadSSaleFlag','NoBorrow','NoFacilitateAccnt','UnknwnFut','MktNotOpen','NoRoutes','NoLocate','SSaleRstr','NoLegs','BadSide','BadLegKeyType','UnknwnRefStk','BadRefMktPrc','UnknwnRefFut','UnknwnRefAtm','BadRefVe','BadProdDef','MarNoRec','MarDisabled','MarMaxCn','MarMaxSh','MarOptMny','MarStkMny','MarRestricted','MarCrdtAcc','MarCrdtDay','MarTotExp','MarOddLot','MarFutMny','MarMaxFc','MarNoRec2','MarDisabled2','MarMaxCn2','MarMaxSh2','MarOptMny2','MarStkMny2','MarRestricted2','MarCrdtAcc2','MarCrdtDay2','MarTotExp2','MarOddLot2','MarFutMny2','MarMaxFc2','MarNoRec3','MarDisabled3','MarMaxCn3','MarMaxSh3','MarOptMny3','MarStkMny3','MarRestricted3','MarCrdtAcc3','MarCrdtDay3','MarTotExp3','MarOddLot3','MarFutMny3','MarMaxFc3','SpdrMaxSh','SpdrMaxFc','SpdrMaxCn','SpdrStkMny','SpdrFutMny','SpdrOptMny','SpdrHold','SpdrOptNv','SpdrDayCn','SpdrDayFc','SpdrDaySh','SpdrDayNv','SpdrFutPosDeAbs','SpdrFutDayDeAbs','SpdrFutDayDeBot','SpdrFutDayDeSld','SpdrExpPosDeAbs','SpdrExpDayDeAbs','SpdrExpDayDeBot','SpdrExpDayDeSld','UserRisk','UserMaxCn','UserMaxSh','UserOptMny','UserStkMny','UserFutMny','UserOptNv','UserDayCn','UserDayNv','UserDayFc','UserDaySh','USymFutMny','UserMaxFc','USymMaxFc','USymHold','USymMaxCn','USymMaxSh','USymOptMny','USymStkMny','USymOptNv','USymDayCn','USymDayNv','USymDayFc','USymDaySh','AccFrozen','ConfigErr','NoFMFuture','NoSpdrSymCtrl','NoSpdrSymExpCtrl','NoLinkage','NoProdDef','BadRiskID','InvldAutoH','LegChange','CxlSpacing','BadHedgeInst','TooLateToReduce','PendCxlRepl','InvldCxlRepl','InvldCxl','DmaReject','NoUPrc','TwapSteps','UnknwnFirm','NoSSaleFlg','MarExemptHold','AccntNotMM','BadSource','VwapLate','AlreadyFilled','UnknownSecKey','InvldGTD','FutRiskHold','NoFutRiskCtrl','SpdrDayAbsDD','SpdrDayAbsNV','SpdrDayAbsWtV','SpdrDayLnDD','SpdrDayLnNV','SpdrDayLnWtV','SpdrDayShDD','SpdrDayShNV','SpdrDayShWtV','UserDayAbsDD','UserDayAbsNV','UserDayAbsWtV','UserDayLnDD','UserDayLnNV','UserDayLnWtV','UserDayShDD','UserDayShNV','UserDayShWtV','USymDayAbsDD','USymDayAbsNV','USymDayAbsWtV','USymDayLnDD','USymDayLnNV','USymDayLnWtV','USymDayShDD','USymDayShNV','USymDayShWtV','CutoffTime','ParentShape','NoFaceSide','NoFaceLegs','AuctionSize','InvldClFirm','BadLegBrkr','NoLegBrkr','StkLegNotAllowed','BadLeadSide','UnknwnRefUnd','ExecEngineType','NoExchAvail','SelfTrade','PointValueErr','MarMaxDDLn','MarMaxDDSh','MarMaxDDAbs','MarMaxVeLn','MarMaxVeSh','MarMaxVeAbs','MarMaxWtVeLn','MarMaxWtVeSh','MarMaxWtVeAbs','CfMaxDdLn','CfMaxDdSh','CfMaxDdAbs','CfMaxVeLn','CfMaxVeSh','CfMaxVeAbs','CfMaxWtVeLn','CfMaxWtVeSh','CfMaxWtVeAbs','NoCfRisk','MarCollar','LmtCollar','RefUPrcErr','InvldUser','InvldAccnt','UnknownCrossId','WidUMkt','UMktCls','UPrcRange')",NO,NULL,"reject reason (if any) of most recent parent order"
+msgsrparentbrkrstate,spdrSource,11,"ENUM('None','SpdrTicket','SpdrSingle','SRSE','FIX','HedgeTool','TradeHedge','OpenHedge','AutoHedge','Orphan','RiskManager','OrderManager','ManagedOrder','RFQRespSrvr','Legger','SRSEDrop','FixDrop','TicketDrop','SysTest','RFRResponse','AllocOmni','AllocClient','CertGateway','MLegResponse','LeggerX','DropManager','AutoHedgeSrvr','XLegger','AuctionStrategySrvr')",NO,NULL,NULL
+msgsrparentbrkrstate,stageType,26,"ENUM('None','StageLock','StageModify','StageReview')",NO,NULL,"parent is a staged order [StageLock, StageModify, StageReview]"
+msgsrparentbrkrstate,strategy,21,VARCHAR(24),NO,NULL,"parent order strategy string (can be user supplied)"
+msgsrparentbrkrstate,sumMakeThrottleDelay,180,FLOAT,NO,NULL,"cumulative seconds of queue skip delay (seconds that a child order was not in the market dues to outbound lines being in a queued/throttled state)"
+msgsrparentbrkrstate,surfacePrc,37,FLOAT,NO,NULL,"SR surface price @ record publish"
+msgsrparentbrkrstate,surfaceVol,38,FLOAT,NO,NULL,"SR surface volatility @ record publish"
+msgsrparentbrkrstate,takeCounter,106,INT,NO,NULL,"number of times order checked by take handler (note: most checks result in no action)"
+msgsrparentbrkrstate,takeLimitErr,80,"ENUM('None','LmtPrcRng','NoStkNbbo','LowStkNbbo','WideStkNbbo','CrossStkNbbo','VolCalcErr','RefUPrcErr','RefDeltaRng','dUPrcRng','BadLmtType','LmtPrcErr','BadCent','CentVolLmt','BadSurf','CentPrcLmt','NoOptNbbo','WideOptNbbo','dYrsRng','BadRefDelta','BadStkNbbo','InvldMkt','BadVolLmt','CrossOptNbbo','NoFutNbbo','LowFutNbbo','WideFutNbbo','CrossFutNbbo','InvldRefMkt','TiedRtnRng','InvldAdjType','ProdDefErr','PrcBandViol','SysErr','NoQteProb','ProbRng','LmtClass','NoAlphaLvl','SurfErr','ProbErr','BadMult','NoUPrc','BadAlphaLvl','LegLimitErr','AuxLimit','NoFutMktSz','FutMktNotOpn','StaleProb','NoStkObj','NoFutObj','NoOptObj','dOpxGaRng','FadeProb','SurfNoTrd','SurfAge','SurfMktSess','SurfVolRng','SurfPrc','NoSurface','SurfLowCCnt','SurfLowPCnt','SurfFitPrcErr','SurfBidAskMiss','SurfLowCounter','SurfDefaultSkew','SurfSessionMiss','SurfBaseErr','SurfSwitchDelay','SurfWideMktV','SurfWideMktP','SurfUWidthEma','SurfCCntEma','SurfPCntEma','SurfVWidthEma','SurfPWidthEma','SurfWideUMkt','LowOptPrc','LegURng','WideMarket','dOpxThRng')",NO,NULL,NULL
+msgsrparentbrkrstate,takeLimitPrice,79,DOUBLE,NO,NULL,"take limit"
+msgsrparentbrkrstate,takeProbLimit,77,FLOAT,NO,NULL,NULL
+msgsrparentbrkrstate,takeState,105,"ENUM('None','Posting','PendPost','OffMkt','BadFirmType','NoExchSet','BadOrder','NoPostSize','MaxActive','ActWait','SendHold','LmtErr','LmtRng','LmtPx','PendAct','MaxSize','OddLot','IWait','Quiet','Fade','InVld','MaxPSz','MaxOrd','MaxPxLv','MaxPec1','MaxPec2','MaxPec3','TryPxLvl1','TryPxLvl2','TryPxLvl3','DonePxLvl1','DonePxLvl2','DonePxLvl3','SendPxLvl1','SendPxLvl2','SendPxLvl3','NoExchQte','CrtErr','SizeWait','NbboHold','ExchHold','CxlRpl','SndErr','OldMdl','ExchRte','PrcHold','ModelErr','LowProb','PostWith','PostBhnd','NoModel','NoOptQte','NoStkQte','RiskHold','SurfHold','NoFutQte','NoStkPrt','PostClr','NoQte','PHold','StkEnv','OptEnv','FutEnv','TryExch','CkSend','PredMiss','SysEnv','NoExchAvail','PostWide','ZeroLmt','LockSkip','ProbLmt','PrcLmt','NoActSz','CkAdd','Locked','PendCxl','NewWait','EnterLimit','EnterPost','EnterFlow','EnterMake','EnterSeeker','EnterMatrix','EnterLegger','SendOK','SendFail','Except','Filled','TrySend','BadMkt','SysError','MktDataErr','TickSizeErr','NullParent','NoUPrc','TryTake','NoProb','SendThrtl','ProbErr','PendClear','MaxExCnt','MaxExpose','NoExDest','ReachDelay','ReachWait','ClearWait','CxlWait','LeavesErr','FeeWait','ActMaker','WthFade','SyncHold','AuctionDone','BadUDefKey','UDefReject','PendUDef','ExchRej','TrySendSprd','Working','RejDelay','NoStepSz','UpdtLegBrkr','LegNewWait','LegNoChng','LegBadMkt','LegImprvDelay','LegUpdtLmt','LegUpdtErr','NoExchList','PendTake','LeggerDone','MaxChildren','RiskCxlThrtl','FlashWait','NoImpRm','RollVlm','MoveVlm','AccelTake','NoMassQte','MktNotOpen','CreateSprd','InvldExch','RFQTimeout','TrySendRFQ','EnterResponder','CreateErr','LockFail','NoRoute','UnkCrossId','SelfTrade','ImpactHold','LegWait','TwapWait','InvalidSpread','PegHold','OffPeg','ChildCxlHold','CheckBrkr','FaceDone','CtrlSize','FacePromote','MatrixDone','TakeVlmHold','NoExchRoute','ExchNoMake','ExchWrking','ExchSingle','ExchMakeHold','ExchBrkrSkip','ExchNoQte','ExchMaxFee','ExchOffMkt','ExchNoImprv','FlashInitErr','FlashCalcErr','MarketClosed','ExchActOrd','ExchMaxFeeP','ExchNoRte','TakeFail','BestPxLmt','PennyProtected','WaitSquare','NotActive','RteOpnLmt','NoTiedMaker','WaitTrigger','CrossPending','NoResponders','SendThrtlHiLat','SendThrtlNewWin','SendThrtlRteQGap','SendThrtlRteQSz','SendThrtlRteQAge','ExRiskMgmt','RouteDayMax')",NO,NULL,"[enum] current state of marketable order handler (taker)"
+msgsrparentbrkrstate,takeSurfOffset,78,FLOAT,NO,NULL,NULL
+msgsrparentbrkrstate,theoPrc,158,FLOAT,NO,NULL,NULL
+msgsrparentbrkrstate,theoVol,157,FLOAT,NO,NULL,NULL
+msgsrparentbrkrstate,ticker_at,28,"ENUM('None','EQT','IDX','BND','CUR','COM','FUT','SYN','WAR','FLX','MUT','SPD','MM','MF','COIN','TOKEN')",NO,NULL,"underlier ticker"
+msgsrparentbrkrstate,ticker_tk,30,VARCHAR(12),NO,NULL,"underlier ticker"
+msgsrparentbrkrstate,ticker_ts,29,"ENUM('None','SR','NMS','CME','ICE','CFE','CBOT','TD','NYMEX','COMEX','RUT','CBOE','ISE','ARCA','NYSE','OTC','GDAX','BSTAMP','KRAKEN','TST','USR1','USR2','USR3','NSDQ','MFQS','PHLX','MIAX','TSE','DJI')",NO,NULL,"underlier ticker"
+msgsrparentbrkrstate,tickValue,141,FLOAT,NO,NULL,"$NLV value of a single tick change in display premium	(pointValue = tickValue / tickSize)"
+msgsrparentbrkrstate,timestamp,183,DATETIME,NO,"1900-01-01 00:00:00","SR system timestamp"
+msgsrparentbrkrstate,timestamp_us,184,"INT UNSIGNED",NO,0,"SR system timestamp"
+msgsrparentbrkrstate,triggerGroupId,20,BIGINT,NO,NULL,NULL
+msgsrparentbrkrstate,uDriftQwapPnL,170,FLOAT,NO,NULL,"qwapPnL - (dir * (de * dir * (avgFillUPrice - brokerQwapUMark)))"
+msgsrparentbrkrstate,uDriftVwapPnL,167,FLOAT,NO,NULL,"vwapPnL - (dir * (de * dir * (avgFillUPrice - brokerVwapUMark)))"
+msgsrparentbrkrstate,underliersPerCn,139,INT,NO,NULL,"option delivery underliers per contract"
+msgsrparentbrkrstate,underlierType,140,"ENUM('None','Equity','Other','FX')",NO,NULL,"type of underlier (affects $greek calculations)"
+msgsrparentbrkrstate,updateDttm,53,DATETIME,NO,"1900-01-01 00:00:00",NULL
+msgsrparentbrkrstate,updateDttm_us,54,"INT UNSIGNED",NO,0,NULL
+msgsrparentbrkrstate,updateSrc,181,"ENUM('None','New','Done','Reject','BrokerStatus','CumActQty','CumFillQty','Dirty','OrderStatus','Refresh','StateReject','PermClosed')",NO,NULL,NULL
+msgsrparentbrkrstate,uPrc,31,DOUBLE,NO,NULL,"underlier price (usually mid-market)"
+msgsrparentbrkrstate,uPrcOrder,32,DOUBLE,NO,NULL,"underlier price at the time of last parent order arrival"
+msgsrparentbrkrstate,uPriceFormat,138,"ENUM('None','N0','N1','N2','N3','N4','N5','N6','N7','F4','F8','Q8','F16','F32','H32','Q32','F64','H64','FullPenny','PartPenny','PartNickle','EQT','V1','V2','V3','V4','V5','V6','V7','V8','V9','V10','V11','V12','V13','V14','V15','A0','A1','A2','A3','A4','A5','A6','A7')",NO,NULL,"underlier price format code"
+msgsrparentbrkrstate,userData1,95,VARCHAR(255),NO,NULL,"client supplied data field; passes through to parent and child executions and reports as well as FIX drops"
+msgsrparentbrkrstate,userData2,96,VARCHAR(255),NO,NULL,"client supplied data field; passes through to parent and child executions and reports as well as FIX drops"
+msgsrparentbrkrstate,userName,15,VARCHAR(24),NO,NULL,"SR user name string"
+msgsrparentbrkrstate,vwapDnPnL,166,FLOAT,NO,NULL,"vwapPnL - uDriftVwapPnL"
+msgsrparentbrkrstate,vwapPnL,165,FLOAT,NO,NULL,"dir * qty * (brokerVwapMark - avgFillPrice)"
+msgsrparentbrkrstate,withSeconds,173,FLOAT,NO,NULL,"number of seconds with one or more working child orders that are with of nbbo"
+msgsrparentbrkrstate,workingSeconds,175,FLOAT,NO,NULL,"number of child order seconds (can be greater than activeSeconds if working on more than one exchange)"

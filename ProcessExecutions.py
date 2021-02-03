@@ -1,5 +1,6 @@
 import pandas as pd
-from SRUtils import process_time_cols, format_df, make_title
+from SRUtils import process_time_cols, format_df, make_title, find_first_file
+import os
 
 def calc_option_TCA_metrics(df, qwap=None, qwapU=None, arrActSlipPct=None, formatted=True):
     """Returns a dataframe of TCA metrics for an option or stock order on SpiderRock
@@ -24,7 +25,7 @@ def calc_option_TCA_metrics(df, qwap=None, qwapU=None, arrActSlipPct=None, forma
 
     Returns
     -------
-    results: pandas.core.frame.DataFrame
+    pandas.core.frame.DataFrame
         A dataframe indexed of TCA stats, separating Making and Taking trades and providing field descriptions
     """
 
@@ -285,33 +286,75 @@ def calc_option_TCA_metrics(df, qwap=None, qwapU=None, arrActSlipPct=None, forma
         results = format_df(results, format_dict)
     return results
 
+def process_day_TCA(dt):
+    """Calls calc_option_TCA_metrics for each trade ticket found for date dt
+
+    The function will attempt to locate the relevant files for the day and determine the number
+    of tickets from the number of unique packageIds.  It will identify hedge trades which share a
+    baseParentNumber with option trades and process them for delta-neutral TCA.  It will attempt to
+    find Qwap (for options) or Vwap (for stock only trades) data matching each baseParentNumber
+
+    Parameters
+    ----------
+    dt : datatime.date (or anything richer than that)
+            The trade date to process
+
+    Returns
+    -------
+    int
+            The number of baseParentNumbers processed
+    """
+
+    tradeFile = os.path.join(os.getcwd(), 'FillData', f'Trades{dt:%Y%m%d}.csv')
+    dayFills = pd.read_csv(tradeFile)
+    process_time_cols(dayFills)
+    wins = 0
+    if dayFills.shape[0] == 0:
+        return wins
+
+    for pkg in dayFills['packageId'].unique():
+        parents = dayFills.loc[dayFills['packageId'] == pkg, 'baseParentNumber'].unique()
+        opt_parents = [p for p in parents if dayFills.loc[dayFills['baseParentNumber'] == p, 'secType'].iloc[0] == 'Option']
+        stock_parents = [p for p in parents if dayFills.loc[dayFills['baseParentNumber'] == p, 'secType'].iloc[0] == 'Stock']
+
+        if len(opt_parents) > 0:
+            # Look for a delta hedge execution
+            if len(stock_parents) == 1: # I think it will be either 0 or 1
+                hedges = dayFills[dayFills['baseParentNumber'] == stock_parents[0]]
+                actUMid = (hedges.loc[hedges.index[0], 'parentBid'] + hedges.loc[hedges.index[0], 'parentAsk']) / 2
+                fillU = (hedges['fillPrice'] * hedges['fillQuantity']).sum() / hedges['fillQuantity'].sum()
+                arrActSlipPct = (fillU - actUMid) / actUMid
+            else:
+                arrActSlipPct = None
+            for opt in opt_parents:
+                # Look for qwap data matching opt
+                brkr = find_first_file(dt)
+                if brkr is not None:
+                    brkr = brkr[brkr['baseParentNumber'] == opt]
+                    if brkr.shape[0] > 0:
+                        qwap = brkr.loc[brkr.index[0], 'brokerQwapMark']
+                        qwapU = brkr.loc[brkr.index[0], 'brokerQwapUMark']
+                else:
+                    qwap = qwapU = None
+                fills = dayFills[dayFills['baseParentNumber'] == opt]
+                results = calc_option_TCA_metrics(fills, qwap, qwapU, arrActSlipPct, formatted=True)
+                fName = make_title(fills) + '_tmp.csv'
+                results.to_csv(os.path.join(os.getcwd(), 'TCA', fName))
+                wins += 1
+
+        if len(opt_parents) == 0 and len(stock_parents) > 0:
+            for stock in stock_parents:
+                # Look for qwap data matching stock
+                # Task for tomorrow ...
+                fills = dayFills[dayFills['baseParentNumber'] == stock]
+                results = calc_option_TCA_metrics(fills)
+                fName = make_title(fills) + '_tmp.csv'
+                results.to_csv(os.path.join(os.getcwd(), 'TCA', fName))
+                wins += 1
+
+    return wins
+
+
 if __name__ == '__main__':
-    data = pd.read_csv('./FillData/Trades20210122.csv')
-    process_time_cols(data)
-    parents = data['baseParentNumber'].unique()
-    execs = data[data['baseParentNumber'] == parents[1]]
-
-    # Calculate actual price for delta-hedge
-    if len(parents) > 1:
-        hedges = data[data['baseParentNumber'] == parents[2]]
-        actUMid = (hedges.loc[hedges.index[0], 'parentBid'] + hedges.loc[hedges.index[0], 'parentAsk']) / 2
-        fillU = (hedges['fillPrice'] * hedges['fillQuantity']).sum() / hedges['fillQuantity'].sum()
-        arrActSlipPct = (fillU - actUMid) / actUMid
-    else:
-        arrActSlipPct = None
-
-    # Look for QWAP data from SR
-    brkr = pd.read_csv('./FillData/BrkrState20210128.csv')
-    brkr = brkr[brkr['baseParentNumber'] == parents[0]]
-    if brkr.shape[0] > 0:
-        qwap = brkr.loc[brkr.index[0], 'brokerQwapMark']
-        qwapU = brkr.loc[brkr.index[0], 'brokerQwapUMark']
-    else:
-        qwap = qwapU = None
-
-    # Call TCA main function
-    results = calc_option_TCA_metrics(execs, qwap, qwapU, arrActSlipPct, formatted=True)
-
-    # Save to csv
-    title = make_title(execs)
-    results.to_csv(f'./TCA/{title}.csv')
+    dt = pd.to_datetime('20210122')
+    wins = process_day_TCA(dt)

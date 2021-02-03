@@ -1,4 +1,6 @@
 import pandas as pd
+import os
+import re
 
 def filter_cols(df):
     # srtrade009.msgsprdparentexecution has 244 columns.  Let's filter to just the ones we need
@@ -72,3 +74,37 @@ def make_title(df):
     else:
         title = title1 + title4
     return title
+
+
+def find_first_file(dt, fStart='BrkrState'):
+    """Returns a dataframe for the first file dated after dt starting with fStart
+
+    The function is hard-coded to look in the directory FillData which is assumed to be
+    in the current working directory.  Files are assumed to be of the format
+    fStartyyyymmdd.csv
+
+    Parameters
+    ----------
+    dt: datetime.date (or anything richer)
+        Filter filenames to be equal to or after this date
+    fStart: string, optional
+        The initial text in the filename (default='BrkrState')
+
+    Returns
+    -------
+    pandas.core.frame.DataFrame or None
+        The result of applying pd.read_csv to the first filename, or None
+        if no appropriate filename found
+    """
+
+    dirPath = os.path.join(os.getcwd(), 'FillData')
+    contents = [f for f in os.listdir(dirPath) if fStart in f]
+    dateStrs = [re.findall('\d{8}', c) for c in contents]
+    dateStrs = [l[0] for l in dateStrs if len(l) > 0]
+    dates = [pd.to_datetime(s) for s in dateStrs]
+    validDates = sorted([d for d in dates if d >= dt])
+    if len(validDates) == 0:
+        return None
+    else:
+        firstFile = f'{fStart}{validDates[0]:%Y%m%d}.csv'
+        return pd.read_csv(os.path.join(dirPath, firstFile))

@@ -1,233 +1,248 @@
-# Really should refactor my variable names to make them more consistent
-
 import pandas as pd
-from collections import namedtuple
 from SRUtils import process_time_cols, format_df, make_title
 
+def calc_option_TCA_metrics(df, qwap=None, qwapU=None, arrActSlipPct=None, formatted=True):
+    # DocString - TBD
 
-def calc_option_TCA_metrics(df, qwap_mark=None, qwap_Umark=None, actualUvsAvg=None, formatted=True):
-    # Returns a dataframe of TCA metrics for making and taking algos separately
-    # This **only** handles a df representing a single underlying with a single trade side
-    # qwap_mark is for primary instrument and qwap_Umark is for underlying
+    # Build results df so as to put variable definitions at start
+    cols = ['Maker', 'Taker', 'Total', 'Desc']
+    comma = '{:>10,.0f}'
+    price = '{:>10.2f}'
+    pct0 = '{:>10.0%}'
+    pct2 = '{:>10.2%}'
+    rows_dict = {
+        'Arrival Mid': (price, 'Mid at order creation'),
+        'Arrival Mark': (price, 'SR Mark at order creation'),
+        'Arrival U Mid': (price, 'Mid of underlying at order creation'),
+        'Arrival Mid Vol': (pct2, 'Implied volatility of Arrival Mid at Arrival U Mid'),
+        'Arrival Mark Vol': (pct2, 'Implied volatility of Arrival Mark at Arrival U Mid'),
+        'Qwap': (price, 'SR-calculated Qwap'),
+        'Qwap U': (price, 'SR-calculated Qwap for underlying price'),
+        'Qwap Vol': (pct2, 'Implied volatility of Qwap at Qwap U'),
+        'Delta': (pct0, 'Option Contract Delta'),
+        'Vega': (price, 'Option Contract Vega'),
+        'Child Orders': (comma, 'Number of child orders which had fills'),
+        'Avg Child Size': (comma, 'Avg size of child orders which had fills'),
+        'Filled Ctr': (comma, 'Total number of contracts filled'),
+        'Ctr Fill Rate': (pct0, 'Filled Contracts divided by total size sent by child orders which had fills'),
+        'Avg Fill Pct Spread': (pct2, '0% means fill is on bid at fill time; 100% means offer'),
+        'Exec Px': (price, 'Average filled price'),
+        'Px Range': (price, 'High minus low fill price'),
+        'Slip Arr Mid Px': (price, 'Amount by which Exec Px was more favorable than mid at order creation'),
+        'Slip Arr Mid USD': (comma, 'Above  * contracts filled * contract multiplier'),
+        'Slip Arr Mark Px': (price, 'Amount by which Exec Px was more favorable than SR mark at order creation'),
+        'Slip Arr Mark USD': (comma, 'Above  * contracts filled * contract multiplier'),
+        'Slip Qwap Px': (price, 'Amount by which Exec Px was more favorable than the above price'),
+        'Slip Qwap USD': (comma, 'Above  * contracts filled * contract multiplier'),
+        'Theo U Mid': (price, 'Average underlying price if hedging mid-market each fill time'),
+        'Exec DTheo Arr Mid Px': (price, 'Exec Px delta-adjusted from Theo U Mid to Arrival Mid'),
+        'DTheo Px Range': (price, 'High minus low delta-adjusted fill price'),
+        'DTheo Slip Arr Mid Px': (price, 'Amount by which Exec DTheo Arr Mid Px was more favorable than Arrival Mid'),
+        'DTheo Slip Arr Mid USD': (comma, 'Above  * contracts filled * contract multiplier'),
+        'DTheo Slip Arr Mark Px': (price, 'Amount by which Exec DTheo Arr Mid Px was more favorable than Arrival Mark'),
+        'DTheo Slip Arr Mark USD': (comma, 'Above  * contracts filled * contract multiplier'),
+        'Exec DTheo Qwap Px': (price, 'Exec Px delta-adjusted from Theo U Mid to Qwap U'),
+        'DTheo Slip Qwap Px': (price, 'Amount by which Exec DTheo Qwap Px was more favorable than Qwap'),
+        'DTheo Slip Qwap USD': (comma, 'Above  * contracts filled * contract multiplier'),
+        'Exec DTheo Vol': (pct2, 'Implied volatility of Exec DTheo Arr Mid Px at Arrival Mid'),
+        'DTheo Vol Range': (pct2, 'High minus low vol'),
+        'DTheo Slip Arr Mid Vol': (pct2, 'Implied volatility of DTheo Slip Arr Mid Px at Arrival Mid'),
+        'DTheo Slip Arr Mark Vol': (pct2, 'Implied volatility of DTheo Slip Arr Mark Px at Arrival Mid'),
+        'DTheo Slip Qwap Vol': (pct2, 'Implied volatility of DTheo Slip Qwap Px at Qwap U'),
+        'Act U Mid': (price, 'Actual average underlying price from executed hedge'),
+        'Exec DAct Arr Mid Px': (price, 'Exec Px delta-adjusted from Act U Mid to Arrival Mid'),
+        'DAct Slip Arr Mid Px': (price, 'Amount by which Exec DAct Arr Mid Px was more favorable than Arrival Mid'),
+        'DAct Slip Arr Mid USD': (comma, 'Above  * contracts filled * contract multiplier'),
+        'DAct Slip Arr Mark Px': (price, 'Amount by which Exec DAct Arr Mid Px was more favorable than Arrival Mark'),
+        'DAct Slip Arr Mark USD': (comma, 'Above  * contracts filled * contract multiplier'),
+        'Exec DAct Qwap Px': (price, 'Exec Px delta-adjusted from Act U Mid to Qwap U'),
+        'DAct Slip Qwap Px': (price, 'Amount by which Exec DAct Qwap Px was more favorable than Qwap'),
+        'DActSlip Qwap USD': (comma, 'Above  * contracts filled * contract multiplier'),
+        'Exec DAct Vol': (pct2, 'Implied volatility of Exec DAct Arr Mid Px at Arrival Mid'),
+        'DAct Slip Arr Mid Vol': (pct2, 'Implied volatility of DTheo Slip Arr Mid Px at Arrival Mid'),
+        'DAct Slip Arr Mark Vol': (pct2, 'Implied volatility of DTheo Slip Arr Mark Px at Arrival Mid'),
+        'DAct Slip Qwap Vol': (pct2, 'Implied volatility of DTheo Slip Qwap Px at Qwap U')}
 
-    # Add a column to df representing the fill price delta-adjusted back to arrival_ul_mid
-    arrival_ul_mid = (df.loc[df.index[0], 'parentUBid'] + df.loc[df.index[0], 'parentUAsk']) / 2
-    delta = df[df['fillQuantity'] > 0]['fillDe'].iloc[0]
-    if delta != 0:
-        df['fillUMid'] = (df['fillUBid'] + df['fillUAsk']) / 2
-        df['fillDAdjPrice'] = df['fillPrice'] - delta * (df['fillUMid'] - arrival_ul_mid)
-        df['fillDAdjBid'] = df['fillBid'] - delta * (df['fillUMid'] - arrival_ul_mid)
-        df['fillDAdjAsk'] = df['fillAsk'] - delta * (df['fillUMid'] - arrival_ul_mid)
-        df['fillDAdjMark'] = df['fillMark'] - delta * (df['fillUMid'] - arrival_ul_mid)
+    results = pd.DataFrame(index=rows_dict.keys(), columns=cols)
 
-    # Add a column to df converting the d-adj fill to a vol
-    arrival_mid = (df.loc[df.index[0], 'parentBid'] + df.loc[df.index[0], 'parentAsk']) / 2
-    arrival_mark = df.loc[df.index[0], 'parentMark']
-    if delta != 0:
-        first_fill_vol = df[df['fillQuantity'] > 0]['fillVol'].iloc[0]
-        first_fill_adj_px = df[df['fillQuantity'] > 0]['fillDAdjPrice'].iloc[0]
-        vega = df[df['fillQuantity'] > 0]['fillVe'].iloc[0]
-        arrival_mid_vol = first_fill_vol + (arrival_mid - first_fill_adj_px) / (100 * vega)
-        arrival_mark_vol = first_fill_vol + (arrival_mark - first_fill_adj_px) / (100 * vega)
-        df['fillCalcVol'] = arrival_mid_vol + (df['fillDAdjPrice'] - arrival_mid) / (100 * vega)
-        df['fillCalcVolBid'] = arrival_mid_vol + (df['fillDAdjBid'] - arrival_mid) / (100 * vega)
-        df['fillCalcVolAsk'] = arrival_mid_vol + (df['fillDAdjAsk'] - arrival_mid) / (100 * vega)
-        df['fillCalcVolMark'] = arrival_mid_vol + (df['fillDAdjMark'] - arrival_mid) / (100 * vega)
+    # Restrict calculations to positive quantity fills only
+    df = df[df['fillQuantity'] > 0].copy()
 
-    # Fudge the contract multiplier rather than looking it up properly
+    # Populate Arrival Stats and Contract Details (incl side and mult)
+    # Handle Generic Metrics
+    arrivalMid = (df['parentBid'].iloc[0] + df['parentAsk'].iloc[0]) / 2
+    arrivalMark = df['parentMark'].iloc[0]
+    arrivalUMid = (df['parentUBid'].iloc[0] + df['parentUAsk'].iloc[0]) / 2
+    # Save to results
+    results.loc['Arrival Mid'] = arrivalMid
+    results.loc['Arrival Mark'] = arrivalMark
+    results.loc['Arrival U Mid'] = arrivalUMid
+
+    if df['orderSide'].iloc[0] == 'Buy':
+        side = 1
+    else:
+        side = -1
     if df['secType'].iloc[0] == 'Option':
         mult = 100
     else:
         mult = 1
 
-    # Prepare to populate TCA results
-    cols = ['Maker', 'Taker', 'Total', 'Desc']
-    field = namedtuple('field', ('format', 'desc'))
-    comma = '{:>10,.0f}'
-    price = '{:>10.2f}'
-    pct0 = '{:>10.0%}'
-    pct2 = '{:>10.2%}'
-    rows_dict = {'Child Orders': field(comma, 'Number of child orders which had fills'),
-                 'Avg Child Size': field(comma, 'Avg size of child orders which had fills'),
-                 'Filled Contracts': field(comma, 'Total number of contracts filled'),
-                 'Contract Fill Rate': field(pct0,
-                                             'Filled Contracts divided by total size sent by child orders which had fills'),
-                 'Fill Pct Spread': field(pct2,
-                                          'Quantity-weighted average of fill price in spread units at time of fill: 0 = on bid; 1 = on offer'),
-                 'Arrival Mid': field(price, 'Mid at order creation'),
-                 'Arrival Mark': field(price, 'SR Mark at order creation'),
-                 'Arrival U/L Mid': field(price, 'Mid of underlying at order creation'),
-                 'Exec Px': field(price, 'Average filled price'),
-                 'Px Range': field(price, 'High minus low fill price'),
-                 'Arr Slip Mid Px': field(price,
-                                          'Amount by which Exec Px was more favorable than mid at order creation'),
-                 'Arr Slip Mid USD': field(comma, 'Above field * contracts filled * contract multiplier'),
-                 'Arr Slip Mark Px': field(price,
-                                           'Amount by which Exec Px was more favorable than SR mark at order creation'),
-                 'Arr Slip Mark USD': field(comma, 'Above field * contracts filled * contract multiplier'),
-                 'QWAP Px': field(price, 'SR-calculated QWAP'),
-                 'QWAP U/L Px': field(price, 'SR-calculated QWAP for underlying price'),
-                 'Slip to QWAP Px': field(price, 'Amount by which Exec Px was more favorable than the above price'),
-                 'Slip to QWAP USD': field(comma, 'Above field * contracts filled * contract multiplier'),
-                 'Exec DAdj Theo Arr Px': field(price,
-                                            'Average of option fills delta-adjusted from fill-time mid back to arrival mid price'),
-                 'DAdj Theo Arr Px Range': field(price, 'High minus low delta-adjusted fill price'),
-                 'Theo U/L Px': field(price, 'The weighted average mid of underlying at fill times'),
-                 'Arr Slip Mid DAdj Theo Px': field(price,
-                                                    'Amount by which Exec DAdj Theo Px was more favorable than mid at order creation'),
-                 'Arr Slip Mid DAdj Theo USD': field(comma, 'Above field * contracts filled * contract multiplier'),
-                 'Arr Slip Mark DAdj Theo Px': field(price,
-                                                     'Amount by which Exec DAdj Theo Px was more favorable than SR mark at order creation'),
-                 'Arr Slip Mark DAdj Theo USD': field(comma, 'Above field * contracts filled * contract multiplier'),
-                 'Exec DAdj Theo QWAP Px': field(price,
-                                                 'Average of option fills delta-adjusted from fill-time mid back to QWAP u/l price'),
-                 'Slip to Exec DAdj Theo QWAP Px': field(price,
-                                                         'Amount by which Exec DAdj Theo QWAP Px was more favorable than the above price'),
-                 'Slip to Exec DAdj Theo QWAP USD': field(comma,
-                                                          'Above field * contracts filled * contract multiplier'),
-                 'Exec Theo Vol': field(pct2, 'Implied volatility of Exec DAdj Theo Arr Px at arrival mid price'),
-                 'Vol Range': field(pct2,
-                                    'All vol fields below correspond to the DAdj fields above, but expressed in vols'),
-                 'Arr Slip Mid Theo Vol': field(pct2, ''),
-                 'Arr Slip Mark Theo Vol': field(pct2, ''),
-                 'QWAP Vol': field(pct2, ''),
-                 'Theo Slip to QWAP Vol': field(pct2, ''),
-                 'Exec DAdj Act Arr Px': field(price,
-                                           'Average of option fills delta-adjusted using actual hedge fills back to arrival mid price'),
-                 'Act U/L Px': field(price, 'Weighted average actual hedge price'),
-                 'Arr Slip Mid DAdj Act Px': field(price,
-                                                   'Amount by which Exec DAdj Act Px was more favorable than mid at order creation'),
-                 'Arr Slip Mid DAdj Act USD': field(comma, 'Above field * contracts filled * contract multiplier'),
-                 'Arr Slip Mark DAdj Act Px': field(price,
-                                                    'Amount by which Exec DAdj Act Px was more favorable than SR mark at order creation'),
-                 'Arr Slip Mark DAdj Act USD': field(comma, 'Above field * contracts filled * contract multiplier'),
-                 'Exec DAdj Act QWAP Px': field(price, 'Average of option fills delta-adjusted from fill-time mid back to QWAP u/l price'),
-                 'Slip to Exec DAdj Act QWAP Px': field(price,
-                                                        'Amount by which Exec DAdj Act QWAP Px was more favorable than the above price'),
-                 'Slip to Exec DAdj Act QWAP USD': field(comma, 'Above field * contracts filled * contract multiplier'),
-                 'Exec Act Vol': field(pct2, 'Implied volatility of Exec DAdj Act Arr Px at arrival mid price'),
-                 'Arr Slip Mid Act Vol': field(pct2, ''),
-                 'Arr Slip Mark Act Vol': field(pct2, ''),
-                 'Act Slip to QWAP Vol': field(pct2, ''),
-                 }
+    # Handle qwap-dependent Metrics
+    if qwap is not None:
+        results.loc['Qwap'] = qwap
+        results.loc['Qwap U'] = qwapU
 
-    results = pd.DataFrame(index=rows_dict.keys(), columns=cols)
-    make_df = df[df['childMakerTaker'] == 'Maker']
-    take_df = df[df['childMakerTaker'] == 'Taker']
+    # Handle delta-dependent Metrics and data
+    delta = df['fillDe'].iloc[0]
+    vega = df['fillVe'].iloc[0]
+    if delta != 0:
+        # Add delta-adjusted price column
+        df['fillUMid'] = (df['fillUBid'] + df['fillUAsk']) / 2
+        df['fillDPrice'] = df['fillPrice'] - delta * (df['fillUMid'] - arrivalUMid)
+        # Calculate arrival vols
+        firstFillVol = df['fillVol'].iloc[0]
+        firstFillDPx = df['fillDPrice'].iloc[0]
+        arrivalMidVol = firstFillVol + (arrivalMid - firstFillDPx) / (100 * vega)
+        arrivalMarkVol = firstFillVol + (arrivalMark - firstFillDPx) / (100 * vega)
+        results.loc['Delta'] = delta
+        results.loc['Vega'] = vega
+        results.loc['Arrival Mid Vol'] = arrivalMidVol
+        results.loc['Arrival Mark Vol'] = arrivalMarkVol
 
-    if df.loc[df.index[0], 'orderSide'] == 'Buy':
-        side = 1
-    else:
-        side = -1
+        # Handle qwap- and delta-dependent Metrics
+        if qwap is not None:
+            qwapDPx = qwap - delta * (qwapU - arrivalUMid)
+            qwapVol = arrivalMidVol + (qwapDPx - arrivalMid) / (100 * vega)
+            results.loc['Qwap Vol'] = qwapVol
 
-    def populate_rows(df, col):
-        fills_df = df[df['fillQuantity'] > 0]
-        # Overall stats
-        results.loc['Child Orders', col] = df['clOrdId'].unique().shape[0]
-        results.loc['Avg Child Size', col] = df.groupby('clOrdId').first()['childSize'].sum() / results.loc[
-            'Child Orders', col]
-        results.loc['Filled Contracts', col] = df['fillQuantity'].sum()
-        results.loc['Contract Fill Rate', col] = results.loc['Filled Contracts', col] / \
-                                                 (results.loc['Avg Child Size', col] * results.loc['Child Orders', col])
-        results.loc['Fill Pct Spread', col] = ((fills_df['fillPrice'] - fills_df['fillBid']) / (
-                fills_df['fillAsk'] - fills_df['fillBid'])
-                                               * fills_df['fillQuantity']).sum() / fills_df['fillQuantity'].sum()
-        results.loc['Arrival Mid', col] = arrival_mid
+        # Handle arrActSlipPct and delta-dependent Metrics
+        if arrActSlipPct is not None:
+            actUMid = (df['fillUMid'].iloc[0]) * (1 + arrActSlipPct)
+            # Note that this uses Mid at the time of first option fill, rather than order arrival,
+            # since my stock returns are based off the time of the first stock fill
+            # (which will follow the option fill)
+            results.loc['Act U Mid'] = actUMid
+
+
+    # Calculate Metrics that Depend on Make/Take Classification
+    def populate_rows(sdf, col):
+        # sdf - subdataframe - e.g. filtered for just Make or Take trades
+
+        # Calc metrics that require none of (delta/vega, qwap, arrActSlipPct)
+        childOrders = sdf['clOrdId'].unique().shape[0]
+        avgChildSize = sdf.groupby('clOrdId').first()['childSize'].sum() / childOrders
+        filledCtr = sdf['fillQuantity'].sum()
+        ctrFillRate = filledCtr / (childOrders * avgChildSize)
+        avgFillPctSpread = ((sdf['fillPrice'] - sdf['fillBid'])
+                             / (sdf['fillAsk'] - sdf['fillBid'])
+                             * sdf['fillQuantity']).sum() / filledCtr
+        execPx = (sdf['fillPrice'] * sdf['fillQuantity']).sum() / filledCtr
+        pxRange = sdf['fillPrice'].max() - sdf['fillPrice'].min()
+        slipArrMidPx = side * (arrivalMid - execPx)
+        slipArrMidUSD = slipArrMidPx * filledCtr * mult
+        slipArrMarkPx = side * (arrivalMark - execPx)
+        slipArrMarkUSD = slipArrMarkPx * filledCtr * mult
+        # Save to results
+        results.loc['Child Orders', col] = childOrders
+        results.loc['Avg Child Size', col] = avgChildSize
+        results.loc['Filled Ctr', col] = filledCtr
+        results.loc['Ctr Fill Rate', col] = ctrFillRate
+        results.loc['Avg Fill Pct Spread', col] = avgFillPctSpread
+        results.loc['Exec Px', col] = execPx
+        results.loc['Px Range', col] = pxRange
+        results.loc['Slip Arr Mid Px', col] = slipArrMidPx
+        results.loc['Slip Arr Mid USD', col] = slipArrMidUSD
+        results.loc['Slip Arr Mark Px', col] = slipArrMarkPx
+        results.loc['Slip Arr Mark USD', col] = slipArrMarkUSD
+
+        # Calc metrics that require only qwap
+        if qwap is not None:
+            slipQwapPx = side * (qwap - execPx)
+            slipQwapUSD = slipQwapPx * filledCtr * mult
+            results.loc['Slip Qwap Px', col] = slipQwapPx
+            results.loc['Slip Qwap USD', col] = slipQwapUSD
+
+        # Calc metrics that require only delta/vega
         if delta != 0:
-            results.loc['Arrival Mark', col] = arrival_mark
-            results.loc['Arrival U/L Mid', col] = arrival_ul_mid
-        # Basic arrival slippage
-        results.loc['Px Range', col] = df['fillPrice'].max() - df['fillPrice'].min()
-        results.loc['Exec Px', col] = (df['fillPrice'] * df['fillQuantity']).sum() / df['fillQuantity'].sum()
-        results.loc['Arr Slip Mid Px', col] = side * (arrival_mid - results.loc['Exec Px', col])
-        results.loc['Arr Slip Mid USD', col] = results.loc['Arr Slip Mid Px', col] * results.loc[
-            'Filled Contracts', col] * mult
-        if delta != 0:
-            results.loc['Arr Slip Mark Px', col] = side * (arrival_mark - results.loc['Exec Px', col])
-            results.loc['Arr Slip Mark USD', col] = results.loc['Arr Slip Mark Px', col] * results.loc[
-                'Filled Contracts', col] * mult
+            theoUMid = (sdf['fillUMid'] * sdf['fillQuantity']).sum() / filledCtr
+            execDTheoArrMidPx = execPx - delta * (theoUMid - arrivalUMid)
+            dTheoPxRange = sdf['fillDPrice'].max() - sdf['fillDPrice'].min()
+            dTheoSlipArrMidPx = side * (arrivalMid - execDTheoArrMidPx)
+            dTheoSlipArrMidUSD = dTheoSlipArrMidPx * filledCtr * mult
+            dTheoSlipArrMarkPx = side * (arrivalMark - execDTheoArrMidPx)
+            dTheoSlipArrMarkUSD = dTheoSlipArrMarkPx * filledCtr * mult
+            execDTheoVol = arrivalMidVol + (execDTheoArrMidPx - arrivalMid) / (100 * vega)
+            dTheoVolRange = dTheoPxRange / (100 * vega)
+            dTheoSlipArrMidVol = dTheoSlipArrMidPx / (100 * vega)
+            dTheoSlipArrMarkVol = dTheoSlipArrMarkPx / (100 * vega)
+            # Save to results
+            results.loc['Theo U Mid', col] = theoUMid
+            results.loc['Exec DTheo Arr Mid Px', col] = execDTheoArrMidPx
+            results.loc['DTheo Px Range', col] = dTheoPxRange
+            results.loc['DTheo Slip Arr Mid Px', col] = dTheoSlipArrMidPx
+            results.loc['DTheo Slip Arr Mid USD', col] = dTheoSlipArrMidUSD
+            results.loc['DTheo Slip Arr Mark Px', col] = dTheoSlipArrMarkPx
+            results.loc['DTheo Slip Arr Mark USD', col] = dTheoSlipArrMarkUSD
+            results.loc['Exec DTheo Vol', col] = execDTheoVol
+            results.loc['DTheo Vol Range', col] = dTheoVolRange
+            results.loc['DTheo Slip Arr Mid Vol', col] = dTheoSlipArrMidVol
+            results.loc['DTheo Slip Arr Mark Vol', col] = dTheoSlipArrMarkVol
 
-        # QWAP slippage
-        if qwap_mark is not None:
-            results.loc['QWAP Px', col] = qwap_mark
-            results.loc['QWAP U/L Px', col] = qwap_Umark
-            results.loc['Slip to QWAP Px', col] = side * (results.loc['QWAP Px', col] - results.loc['Exec Px', col])
-            results.loc['Slip to QWAP USD', col] = results.loc['Slip to QWAP Px', col] * results.loc[
-                'Filled Contracts', col] * mult
+            # Calc metrics that require both delta/vega and qwap
+            if qwap is not None:
+                execDTheoQwapPx = execPx - delta * (theoUMid - qwapU)
+                dTheoSlipQwapPx = side * (qwap - execDTheoQwapPx)
+                dTheoSlipQwapUSD = dTheoSlipQwapPx * filledCtr * mult
+                dTheoSlipQwapVol = dTheoSlipQwapPx / (100 * vega)
+                # Save to results
+                results.loc['Exec DTheo Qwap Px', col] = execDTheoQwapPx
+                results.loc['DTheo Slip Qwap Px', col] = dTheoSlipQwapPx
+                results.loc['DTheo Slip Qwap USD', col] = dTheoSlipQwapUSD
+                results.loc['DTheo Slip Qwap Vol', col] = dTheoSlipQwapVol
 
-        # Show delta-adjusted and vol versions of above
-        if delta != 0:  # so vega != 0 either
-            # Delta-adjusted Arrival
-            results.loc['Exec DAdj Theo Arr Px', col] = (df['fillDAdjPrice'] * df['fillQuantity']).sum() / df[
-                'fillQuantity'].sum()
-            results.loc['DAdj Theo Arr Px Range', col] = fills_df['fillDAdjPrice'].max() - fills_df[
-                'fillDAdjPrice'].min()
-            fill_Umark = (df['fillUMid'] * df['fillQuantity']).sum() / df['fillQuantity'].sum()
-            results.loc['Theo U/L Px', col] = fill_Umark
-            results.loc['Arr Slip Mid DAdj Theo Px', col] = side * (arrival_mid - results.loc['Exec DAdj Theo Arr Px', col])
-            results.loc['Arr Slip Mid DAdj Theo USD', col] = results.loc['Arr Slip Mid DAdj Theo Px', col] * \
-                                                             results.loc['Filled Contracts', col] * mult
-            results.loc['Arr Slip Mark DAdj Theo Px', col] = side * (
-                        arrival_mark - results.loc['Exec DAdj Theo Arr Px', col])
-            results.loc['Arr Slip Mark DAdj Theo USD', col] = results.loc['Arr Slip Mark DAdj Theo Px', col] * \
-                                                              results.loc['Filled Contracts', col] * mult
-            # Delta-adjusted QWAP
-            if qwap_mark is not None:
-                results.loc['Exec DAdj Theo QWAP Px', col] = results.loc['Exec Px', col] - delta * (fill_Umark - qwap_Umark)
-                results.loc['Slip to Exec DAdj Theo QWAP Px', col] = side * (
-                            qwap_mark - results.loc['Exec DAdj Theo QWAP Px', col])
-                results.loc['Slip to Exec DAdj Theo QWAP USD', col] = results.loc['Slip to Exec DAdj Theo QWAP Px', col] * \
-                                                                      results.loc['Filled Contracts', col] * mult
-            # Vol
-            results.loc['Vol Range', col] = fills_df['fillCalcVol'].max() - fills_df['fillCalcVol'].min()
-            results.loc['Exec Theo Vol', col] = (df['fillCalcVol'] * df['fillQuantity']).sum() / df[
-                'fillQuantity'].sum()
-            results.loc['Arr Slip Mid Theo Vol', col] = side * (arrival_mid_vol - results.loc['Exec Theo Vol', col])
-            # Vol USD fields will differ slightly from DAdjUSD due to gamma if using SR Vols but will exactly match with CalcVol
-            results.loc['Arr Slip Mark Theo Vol', col] = side * (arrival_mark_vol - results.loc['Exec Theo Vol', col])
-            if qwap_mark is not None:
-                results.loc['QWAP Vol', col] = arrival_mid_vol + (
-                            qwap_mark - delta * (qwap_Umark - arrival_ul_mid) - arrival_mid) / (100 * vega)
-                results.loc['Theo Slip to QWAP Vol', col] = side * (
-                            results.loc['QWAP Vol', col] - results.loc['Exec Theo Vol', col])
+            # Calc metrics that require delta/vega and arrActSlipPct
+            if arrActSlipPct is not None:
+                execDActArrMidPx = execPx - delta * (actUMid - arrivalUMid)
+                dActSlipArrMidPx = side * (arrivalMid - execDActArrMidPx)
+                dActSlipArrMidUSD = dActSlipArrMidPx * filledCtr * mult
+                dActSlipArrMarkPx = side * (arrivalMark - execDActArrMidPx)
+                dActSlipArrMarkUSD = dActSlipArrMarkPx * filledCtr * mult
+                execDActVol = arrivalMidVol + (execDActArrMidPx - arrivalMid) / (100 * vega)
+                dActSlipArrMidVol = dActSlipArrMidPx / (100 * vega)
+                dActSlipArrMarkVol = dActSlipArrMarkPx / (100 * vega)
+                # Save to results
+                results.loc['Exec DAct Arr Mid Px', col] = execDActArrMidPx
+                results.loc['DAct Slip Arr Mid Px', col] = dActSlipArrMidPx
+                results.loc['DAct Slip Arr Mid USD', col] = dActSlipArrMidUSD
+                results.loc['DAct Slip Arr Mark Px', col] = dActSlipArrMarkPx
+                results.loc['DAct Slip Arr Mark USD', col] = dActSlipArrMarkUSD
+                results.loc['Exec DAct Vol', col] = execDActVol
+                results.loc['DAct Slip Arr Mid Vol', col] = dActSlipArrMidVol
+                results.loc['DAct Slip Arr Mark Vol', col] = dActSlipArrMarkVol
 
-        if (actualUvsAvg is not None) and (delta != 0):
-            # Calculate values delta-adjusted using actual execution level
-            actual_ul = (fills_df.loc[fills_df.index[0], 'fillUBid'] + fills_df.loc[fills_df.index[0], 'fillUBid']) * (1 + actualUvsAvg) / 2
-            # using the u/l at the time of first option fill for proxy of u/l at first stock fill
-            # Delta-adjusted Arrival
-            results.loc['Exec DAdj Act Arr Px', col] = results.loc['Exec Px', col] - delta * (actual_ul - arrival_ul_mid)
-            results.loc['Act U/L Px', col] = actual_ul
-            results.loc['Arr Slip Mid DAdj Act Px', col] = side * (arrival_mid - results.loc['Exec DAdj Act Arr Px', col])
-            results.loc['Arr Slip Mid DAdj Act USD', col] = results.loc['Arr Slip Mid DAdj Act Px', col] * \
-                                                            results.loc['Filled Contracts', col] * mult
-            results.loc['Arr Slip Mark DAdj Act Px', col] = side * (arrival_mark - results.loc['Exec DAdj Act Arr Px', col])
-            results.loc['Arr Slip Mark DAdj Act USD', col] = results.loc['Arr Slip Mark DAdj Act Px', col] * \
-                                                             results.loc['Filled Contracts', col] * mult
-            # Delta-adjusted QWAP
-            if qwap_mark is not None:
-                results.loc['Exec DAdj Act QWAP Px', col] = results.loc['Exec Px', col] - delta * (actual_ul - qwap_Umark)
-                results.loc['Slip to Exec DAdj Act QWAP Px', col] = side * (
-                            qwap_mark - results.loc['Exec DAdj Act QWAP Px', col])
-                results.loc['Slip to Exec DAdj Act QWAP USD', col] = results.loc['Slip to Exec DAdj Act QWAP Px', col] * \
-                                                                     results.loc['Filled Contracts', col] * mult
-            # Vol
-            if delta != 0:
-                results.loc['Exec Act Vol', col] = arrival_mid_vol + (
-                            results.loc['Exec DAdj Act Arr Px', col] - arrival_mid) / (100 * vega)
-                results.loc['Arr Slip Mid Act Vol', col] = side * (arrival_mid_vol - results.loc['Exec Act Vol', col])
-                results.loc['Arr Slip Mark Act Vol', col] = side * (arrival_mark_vol - results.loc['Exec Act Vol', col])
-                if qwap_mark is not None:
-                    results.loc['Act Slip to QWAP Vol', col] = side * (
-                                results.loc['QWAP Vol', col] - results.loc['Exec Act Vol', col])
+                # Calc metrics that require delta/vega, arrActSlipPct and qwap
+                if qwap is not None:
+                    execDActQwapPx = execPx - delta * (actUMid - qwapU)
+                    dActSlipQwapPx = side * (qwap - execDActQwapPx)
+                    dActSlipQwapUSD = dActSlipQwapPx * filledCtr * mult
+                    dActSlipQwapVol = dActSlipQwapPx / (100 * vega)
+                    # Save to results
+                    results.loc['Exec DAct Qwap Px', col] = execDActQwapPx
+                    results.loc['DAct Slip Qwap Px', col] = dActSlipQwapPx
+                    results.loc['DActSlip Qwap USD', col] = dActSlipQwapUSD
+                    results.loc['DAct Slip Qwap Vol', col] = dActSlipQwapVol
 
-    if make_df['fillQuantity'].sum() > 0:
-        populate_rows(make_df, 'Maker')
+    # Run populate_rows for makeDf / takeDf
+    makeDf = df[df['childMakerTaker'] == 'Maker']
+    takeDf = df[df['childMakerTaker'] == 'Taker']
+
+    if makeDf['fillQuantity'].sum() > 0:
+        populate_rows(makeDf, 'Maker')
     else:
         results['Maker'] = 0
 
-    if take_df['fillQuantity'].sum() > 0:
-        populate_rows(take_df, 'Taker')
+    if takeDf['fillQuantity'].sum() > 0:
+        populate_rows(takeDf, 'Taker')
     else:
         results['Taker'] = 0
 
@@ -238,37 +253,41 @@ def calc_option_TCA_metrics(df, qwap_mark=None, qwap_Umark=None, actualUvsAvg=No
 
     # Add descriptions
     for key in rows_dict.keys():
-        results.loc[key, 'Desc'] = rows_dict[key].desc
+        results.loc[key, 'Desc'] = rows_dict[key][1]
 
-    # Add formatting
+    # Add formatting and return results
     if formatted:
-        format_dict = {key: rows_dict[key].format for key in rows_dict.keys()}
+        format_dict = {key: rows_dict[key][0] for key in rows_dict.keys()}
         results = format_df(results, format_dict)
     return results
 
-
 if __name__ == '__main__':
-    df = pd.read_csv('./FillData/Trades20210127.csv')
-    process_time_cols(df)
-    parents = df['baseParentNumber'].unique()
-    execs = df[df['baseParentNumber'] == parents[0]].copy()
+    data = pd.read_csv('./FillData/Trades20210126.csv')
+    process_time_cols(data)
+    parents = data['baseParentNumber'].unique()
+    execs = data[data['baseParentNumber'] == parents[0]]
+
     # Calculate actual price for delta-hedge
     if len(parents) > 1:
-        hedges = df[df['baseParentNumber'] == parents[1]]
-        arrival_U = (hedges.loc[hedges.index[0], 'parentBid'] + hedges.loc[hedges.index[0], 'parentAsk']) / 2
-        fill_U = (hedges['fillPrice'] * hedges['fillQuantity']).sum() / hedges['fillQuantity'].sum()
-        actualUvsAvg = (fill_U - arrival_U) / arrival_U
+        hedges = data[data['baseParentNumber'] == parents[1]]
+        actUMid = (hedges.loc[hedges.index[0], 'parentBid'] + hedges.loc[hedges.index[0], 'parentAsk']) / 2
+        fillU = (hedges['fillPrice'] * hedges['fillQuantity']).sum() / hedges['fillQuantity'].sum()
+        arrActSlipPct = (fillU - actUMid) / actUMid
     else:
-        actualUvsAvg = None
+        arrActSlipPct = None
 
-    brkr = pd.read_csv('./FillData/BrkrState20210127.csv')
+    # Look for QWAP data from SR
+    brkr = pd.read_csv('./FillData/BrkrState20210126.csv')
     brkr = brkr[brkr['baseParentNumber'] == parents[0]]
     if brkr.shape[0] > 0:
-        qwap_mark = brkr.loc[brkr.index[0], 'brokerQwapMark']
-        qwap_Umark = brkr.loc[brkr.index[0], 'brokerQwapUMark']
+        qwap = brkr.loc[brkr.index[0], 'brokerQwapMark']
+        qwapU = brkr.loc[brkr.index[0], 'brokerQwapUMark']
     else:
-        qwap_mark = qwap_Umark = None
-    results = calc_option_TCA_metrics(execs, qwap_mark, qwap_Umark, actualUvsAvg)
+        qwap = qwapU = None
+
+    # Call TCA main function
+    results = calc_option_TCA_metrics(execs, qwap, qwapU, arrActSlipPct, formatted=True)
+
     # Save to csv
     title = make_title(execs)
     results.to_csv(f'./TCA/{title}.csv')

@@ -95,12 +95,8 @@ def calc_option_TCA_metrics(df, qwap=None, qwapU=None, arrActSlipPct=None, forma
     # Populate Arrival Stats and Contract Details (incl side and mult)
     # Handle Generic Metrics
     arrivalMid = (df['parentBid'].iloc[0] + df['parentAsk'].iloc[0]) / 2
-    arrivalMark = df['parentMark'].iloc[0]
-    arrivalUMid = (df['parentUBid'].iloc[0] + df['parentUAsk'].iloc[0]) / 2
     # Save to results
     results.loc['Arrival Mid'] = arrivalMid
-    results.loc['Arrival Mark'] = arrivalMark
-    results.loc['Arrival U Mid'] = arrivalUMid
 
     if df['orderSide'].iloc[0] == 'Buy':
         side = 1
@@ -120,6 +116,8 @@ def calc_option_TCA_metrics(df, qwap=None, qwapU=None, arrActSlipPct=None, forma
     delta = df['fillDe'].iloc[0]
     vega = df['fillVe'].iloc[0]
     if delta != 0:
+        arrivalMark = df['parentMark'].iloc[0]
+        arrivalUMid = (df['parentUBid'].iloc[0] + df['parentUAsk'].iloc[0]) / 2
         # Add delta-adjusted price column
         df['fillUMid'] = (df['fillUBid'] + df['fillUAsk']) / 2
         df['fillDPrice'] = df['fillPrice'] - delta * (df['fillUMid'] - arrivalUMid)
@@ -130,6 +128,8 @@ def calc_option_TCA_metrics(df, qwap=None, qwapU=None, arrActSlipPct=None, forma
         arrivalMarkVol = firstFillVol + (arrivalMark - firstFillDPx) / (100 * vega)
         results.loc['Delta'] = delta
         results.loc['Vega'] = vega
+        results.loc['Arrival Mark'] = arrivalMark
+        results.loc['Arrival U Mid'] = arrivalUMid
         results.loc['Arrival Mid Vol'] = arrivalMidVol
         results.loc['Arrival Mark Vol'] = arrivalMarkVol
 
@@ -164,8 +164,6 @@ def calc_option_TCA_metrics(df, qwap=None, qwapU=None, arrActSlipPct=None, forma
         pxRange = sdf['fillPrice'].max() - sdf['fillPrice'].min()
         slipArrMidPx = side * (arrivalMid - execPx)
         slipArrMidUSD = slipArrMidPx * filledCtr * mult
-        slipArrMarkPx = side * (arrivalMark - execPx)
-        slipArrMarkUSD = slipArrMarkPx * filledCtr * mult
         # Save to results
         results.loc['Child Orders', col] = childOrders
         results.loc['Avg Child Size', col] = avgChildSize
@@ -176,8 +174,6 @@ def calc_option_TCA_metrics(df, qwap=None, qwapU=None, arrActSlipPct=None, forma
         results.loc['Px Range', col] = pxRange
         results.loc['Slip Arr Mid Px', col] = slipArrMidPx
         results.loc['Slip Arr Mid USD', col] = slipArrMidUSD
-        results.loc['Slip Arr Mark Px', col] = slipArrMarkPx
-        results.loc['Slip Arr Mark USD', col] = slipArrMarkUSD
 
         # Calc metrics that require only qwap
         if qwap is not None:
@@ -188,6 +184,8 @@ def calc_option_TCA_metrics(df, qwap=None, qwapU=None, arrActSlipPct=None, forma
 
         # Calc metrics that require only delta/vega
         if delta != 0:
+            slipArrMarkPx = side * (arrivalMark - execPx) # Doesn't use delta but mark is zero for non options
+            slipArrMarkUSD = slipArrMarkPx * filledCtr * mult
             theoUMid = (sdf['fillUMid'] * sdf['fillQuantity']).sum() / filledCtr
             execDTheoArrMidPx = execPx - delta * (theoUMid - arrivalUMid)
             dTheoPxRange = sdf['fillDPrice'].max() - sdf['fillDPrice'].min()
@@ -200,6 +198,8 @@ def calc_option_TCA_metrics(df, qwap=None, qwapU=None, arrActSlipPct=None, forma
             dTheoSlipArrMidVol = dTheoSlipArrMidPx / (100 * vega)
             dTheoSlipArrMarkVol = dTheoSlipArrMarkPx / (100 * vega)
             # Save to results
+            results.loc['Slip Arr Mark Px', col] = slipArrMarkPx
+            results.loc['Slip Arr Mark USD', col] = slipArrMarkUSD
             results.loc['Theo U Mid', col] = theoUMid
             results.loc['Exec DTheo Arr Mid Px', col] = execDTheoArrMidPx
             results.loc['DTheo Px Range', col] = dTheoPxRange
@@ -286,14 +286,14 @@ def calc_option_TCA_metrics(df, qwap=None, qwapU=None, arrActSlipPct=None, forma
     return results
 
 if __name__ == '__main__':
-    data = pd.read_csv('./FillData/Trades20210126.csv')
+    data = pd.read_csv('./FillData/Trades20210122.csv')
     process_time_cols(data)
     parents = data['baseParentNumber'].unique()
-    execs = data[data['baseParentNumber'] == parents[0]]
+    execs = data[data['baseParentNumber'] == parents[1]]
 
     # Calculate actual price for delta-hedge
     if len(parents) > 1:
-        hedges = data[data['baseParentNumber'] == parents[1]]
+        hedges = data[data['baseParentNumber'] == parents[2]]
         actUMid = (hedges.loc[hedges.index[0], 'parentBid'] + hedges.loc[hedges.index[0], 'parentAsk']) / 2
         fillU = (hedges['fillPrice'] * hedges['fillQuantity']).sum() / hedges['fillQuantity'].sum()
         arrActSlipPct = (fillU - actUMid) / actUMid
@@ -301,7 +301,7 @@ if __name__ == '__main__':
         arrActSlipPct = None
 
     # Look for QWAP data from SR
-    brkr = pd.read_csv('./FillData/BrkrState20210126.csv')
+    brkr = pd.read_csv('./FillData/BrkrState20210128.csv')
     brkr = brkr[brkr['baseParentNumber'] == parents[0]]
     if brkr.shape[0] > 0:
         qwap = brkr.loc[brkr.index[0], 'brokerQwapMark']

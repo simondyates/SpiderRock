@@ -1,11 +1,11 @@
 ,Maker,Taker,Total,Desc
+Arrival Mid,    383.10,    383.10,    383.10,Mid at order creation
 Child Orders,         7,       212,       219,Number of child orders which had fills
 Avg Child Size,       314,       199,       202,Avg size of child orders which had fills
-Filled Contracts,"     1,766","    38,234","    40,000",Total number of contracts filled
-Contract Fill Rate,       80%,       91%,       90%,Filled Contracts divided by total size sent by child orders which had fills
-Fill Pct Spread,    95.28%,    99.87%,    99.67%,Quantity-weighted average of fill price in spread units at time of fill: 0 = on bid; 1 = on offer
-Arrival Mid,    383.10,    383.10,    383.10,Mid at order creation
+Filled Ctr,"     1,766","    38,234","    40,000",Total number of contracts filled
+Ctr Fill Rate,       80%,       91%,       90%,Filled Contracts divided by total size sent by child orders which had fills
+Avg Fill Pct Spread,    95.28%,    99.87%,    99.67%,0% means fill is on bid at fill time; 100% means offer
 Exec Px,    382.59,    382.54,    382.55,Average filled price
 Px Range,      0.89,      1.12,      1.17,High minus low fill price
-Arr Slip Mid Px,      0.52,      0.56,      0.56,Amount by which Exec Px was more favorable than mid at order creation
-Arr Slip Mid USD,       912,"    21,466","    22,378",Above field * contracts filled * contract multiplier
+Slip Arr Mid Px,      0.52,      0.56,      0.56,Amount by which Exec Px was more favorable than mid at order creation
+Slip Arr Mid USD,       912,"    21,466","    22,378",Above  * contracts filled * contract multiplier

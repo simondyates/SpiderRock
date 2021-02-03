@@ -2,7 +2,31 @@ import pandas as pd
 from SRUtils import process_time_cols, format_df, make_title
 
 def calc_option_TCA_metrics(df, qwap=None, qwapU=None, arrActSlipPct=None, formatted=True):
-    # DocString - TBD
+    """Returns a dataframe of TCA metrics for an option or stock order on SpiderRock
+
+    The are three broad classes of TCA returned.  The first is raw stats on execution price vs. arrival
+    and QWAP (quote-weighted average price).  The second uses theoretical delta-adjusted values. These are
+    theoretical in the sense they assume the delta-hedge was executed at mid-market at the time of each option fill.
+    The third takes an actual delta execution price and uses this in place of the theoretical one.
+
+    Parameters
+    ----------
+    df : pandas.core.frame.DataFrame
+        A dataframe generated from SRSE Trade's msgsrparentexecution table, filtered to represent a single underlying
+    qwap : float, optional
+        SR's estimated QWAP for the option, from msgsrparentbrkrstate (default is None)
+    qwapU : float, optional
+        SR's estimated QWAP for the option underlying, from msgsrparentbrkrstate(default is None)
+    arrActSlipPct: float, optional
+        The % difference between the hedge's average price and its mid at the time of first fill (default is None)
+    formatted: bool, optional
+        Whether the dataframe returned should be converted to fixed-width formatted strings (default is True)
+
+    Returns
+    -------
+    results: pandas.core.frame.DataFrame
+        A dataframe indexed of TCA stats, separating Making and Taking trades and providing field descriptions
+    """
 
     # Build results df so as to put variable definitions at start
     cols = ['Maker', 'Taker', 'Total', 'Desc']

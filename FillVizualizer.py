@@ -1,5 +1,6 @@
 # TO DO: Make this into a single function
 
+import os
 import pandas as pd
 from SRUtils import process_time_cols, make_title
 import plotly.graph_objects as go
@@ -8,7 +9,7 @@ import plotly.offline as off
 import plotly.io as pio
 pio.renderers.default = 'browser'
 
-df = pd.read_csv('./FillData/Trades20210128.csv')
+df = pd.read_csv(os.path.join(os.getcwd(), 'FillData', 'Trades20210126.csv'))
 df = df[df['fillQuantity'] > 0]
 
 parents = df['baseParentNumber'].unique()
@@ -119,7 +120,10 @@ def plot_fill_graph(df, pct_y=False):
     fig.update_yaxes(title='Cumulative Fills', tickformat=',.0f', showgrid=False, secondary_y=True, row=1, col=1)
     fig.update_yaxes(title='Underlier Price', tickformat=',.0f', showgrid=False, secondary_y=True, row=2, col=1)
     fig.update_layout(title=title, height=1000, width=1000)
-    fig.show()
-    #off.plot(fig, filename=f'./TCA/{title}.html')
+    #fig.show()
+    off.plot(fig, filename=os.path.join(os.getcwd(), 'TCA', f'{title}.html'))
 
-plot_fill_graph(df_vol, True)
+if __name__ == '__main__':
+    # use df for raw prices, df_adj for delta-adjusted and df_vol for vols
+    # pct_y should be False for the first two and True for vols
+    plot_fill_graph(df_vol, True)

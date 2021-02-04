@@ -41,7 +41,7 @@ def calc_option_TCA_metrics(df, qwap=None, qwapU=None, arrActSlipPct=None, forma
         'Arrival U Mid': (price, 'Mid of underlying at order creation'),
         'Arrival Mid Vol': (pct2, 'Implied volatility of Arrival Mid at Arrival U Mid'),
         'Arrival Mark Vol': (pct2, 'Implied volatility of Arrival Mark at Arrival U Mid'),
-        'Qwap': (price, 'SR-calculated Qwap'),
+        'Qwap': (price, 'SR-calculated Qwap (or Vwap for a stock only order)'),
         'Qwap U': (price, 'SR-calculated Qwap for underlying price'),
         'Qwap Vol': (pct2, 'Implied volatility of Qwap at Qwap U'),
         'Delta': (pct0, 'Option Contract Delta'),
@@ -57,7 +57,7 @@ def calc_option_TCA_metrics(df, qwap=None, qwapU=None, arrActSlipPct=None, forma
         'Slip Arr Mid USD': (comma, 'Above  * contracts filled * contract multiplier'),
         'Slip Arr Mark Px': (price, 'Amount by which Exec Px was more favorable than SR mark at order creation'),
         'Slip Arr Mark USD': (comma, 'Above  * contracts filled * contract multiplier'),
-        'Slip Qwap Px': (price, 'Amount by which Exec Px was more favorable than the above price'),
+        'Slip Qwap Px': (price, 'Amount by which Exec Px was more favorable than Qwap'),
         'Slip Qwap USD': (comma, 'Above  * contracts filled * contract multiplier'),
         'Theo U Mid': (price, 'Average underlying price if hedging mid-market each fill time'),
         'Exec DTheo Arr Mid Px': (price, 'Exec Px delta-adjusted from Theo U Mid to Arrival Mid'),
@@ -338,16 +338,22 @@ def process_day_TCA(dt):
                     qwap = qwapU = None
                 fills = dayFills[dayFills['baseParentNumber'] == opt]
                 results = calc_option_TCA_metrics(fills, qwap, qwapU, arrActSlipPct, formatted=True)
-                fName = make_title(fills) + '_tmp.csv'
+                fName = make_title(fills) + '.csv'
                 results.to_csv(os.path.join(os.getcwd(), 'TCA', fName))
                 wins += 1
 
         if len(opt_parents) == 0 and len(stock_parents) > 0:
             for stock in stock_parents:
-                # Look for qwap data matching stock
-                # Task for tomorrow ...
+                # Look for Vwap data matching stock
+                # For a pure stock order, Vwap is probably a better metric than Qwap
+                qwap = qwapU = None
+                brkr = find_first_file(dt)
+                if brkr is not None:
+                    brkr = brkr[brkr['baseParentNumber'] == stock]
+                    if brkr.shape[0] > 0:
+                        qwap = brkr.loc[brkr.index[0], 'brokerVwapMark']
                 fills = dayFills[dayFills['baseParentNumber'] == stock]
-                results = calc_option_TCA_metrics(fills)
+                results = calc_option_TCA_metrics(fills, qwap)
                 fName = make_title(fills) + '.csv'
                 results.to_csv(os.path.join(os.getcwd(), 'TCA', fName))
                 wins += 1

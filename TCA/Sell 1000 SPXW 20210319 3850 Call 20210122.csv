@@ -4,6 +4,9 @@ Arrival Mark,      0.00,    105.76,    105.76,SR Mark at order creation
 Arrival U Mid,      0.00,   3848.79,   3848.79,Mid of underlying at order creation
 Arrival Mid Vol,     0.00%,    18.24%,    18.24%,Implied volatility of Arrival Mid at Arrival U Mid
 Arrival Mark Vol,     0.00%,    18.23%,    18.23%,Implied volatility of Arrival Mark at Arrival U Mid
+Qwap,      0.00,    105.36,    105.36,SR-calculated Qwap (or Vwap for a stock only order)
+Qwap U,      0.00,   3848.00,   3848.00,SR-calculated Qwap for underlying price
+Qwap Vol,     0.00%,    18.23%,    18.23%,Implied volatility of Qwap at Qwap U
 Delta,        0%,       50%,       50%,Option Contract Delta
 Vega,      0.00,      6.04,      6.04,Option Contract Vega
 Child Orders,         0,        91,        91,Number of child orders which had fills
@@ -17,6 +20,8 @@ Slip Arr Mid Px,      0.00,     -0.41,     -0.41,Amount by which Exec Px was mor
 Slip Arr Mid USD,         0,"   -41,090","   -41,090",Above  * contracts filled * contract multiplier
 Slip Arr Mark Px,      0.00,     -0.37,     -0.37,Amount by which Exec Px was more favorable than SR mark at order creation
 Slip Arr Mark USD,         0,"   -36,956","   -36,956",Above  * contracts filled * contract multiplier
+Slip Qwap Px,      0.00,      0.03,      0.03,Amount by which Exec Px was more favorable than Qwap
+Slip Qwap USD,         0,"     2,610","     2,610",Above  * contracts filled * contract multiplier
 Theo U Mid,      0.00,   3848.28,   3848.28,Average underlying price if hedging mid-market each fill time
 Exec DTheo Arr Mid Px,      0.00,    105.64,    105.64,Exec Px delta-adjusted from Theo U Mid to Arrival Mid
 DTheo Px Range,      0.00,      0.69,      0.69,High minus low delta-adjusted fill price
@@ -24,16 +29,24 @@ DTheo Slip Arr Mid Px,      0.00,     -0.16,     -0.16,Amount by which Exec DThe
 DTheo Slip Arr Mid USD,         0,"   -15,723","   -15,723",Above  * contracts filled * contract multiplier
 DTheo Slip Arr Mark Px,      0.00,     -0.12,     -0.12,Amount by which Exec DTheo Arr Mid Px was more favorable than Arrival Mark
 DTheo Slip Arr Mark USD,         0,"   -11,589","   -11,589",Above  * contracts filled * contract multiplier
+Exec DTheo Qwap Px,      0.00,    105.25,    105.25,Exec Px delta-adjusted from Theo U Mid to Qwap U
+DTheo Slip Qwap Px,      0.00,     -0.11,     -0.11,Amount by which Exec DTheo Qwap Px was more favorable than Qwap
+DTheo Slip Qwap USD,         0,"   -11,287","   -11,287",Above  * contracts filled * contract multiplier
 Exec DTheo Vol,     0.00%,    18.21%,    18.21%,Implied volatility of Exec DTheo Arr Mid Px at Arrival Mid
 DTheo Vol Range,     0.00%,     0.11%,     0.11%,High minus low vol
 DTheo Slip Arr Mid Vol,     0.00%,    -0.03%,    -0.03%,Implied volatility of DTheo Slip Arr Mid Px at Arrival Mid
 DTheo Slip Arr Mark Vol,     0.00%,    -0.02%,    -0.02%,Implied volatility of DTheo Slip Arr Mark Px at Arrival Mid
+DTheo Slip Qwap Vol,     0.00%,    -0.02%,    -0.02%,Implied volatility of DTheo Slip Qwap Px at Qwap U
 Act U Mid,      0.00,   3848.48,   3848.48,Actual average underlying price from executed hedge
 Exec DAct Arr Mid Px,      0.00,    105.54,    105.54,Exec Px delta-adjusted from Act U Mid to Arrival Mid
 DAct Slip Arr Mid Px,      0.00,     -0.26,     -0.26,Amount by which Exec DAct Arr Mid Px was more favorable than Arrival Mid
 DAct Slip Arr Mid USD,         0,"   -25,732","   -25,732",Above  * contracts filled * contract multiplier
 DAct Slip Arr Mark Px,      0.00,     -0.22,     -0.22,Amount by which Exec DAct Arr Mid Px was more favorable than Arrival Mark
 DAct Slip Arr Mark USD,         0,"   -21,598","   -21,598",Above  * contracts filled * contract multiplier
+Exec DAct Qwap Px,      0.00,    105.15,    105.15,Exec Px delta-adjusted from Act U Mid to Qwap U
+DAct Slip Qwap Px,      0.00,     -0.21,     -0.21,Amount by which Exec DAct Qwap Px was more favorable than Qwap
+DActSlip Qwap USD,         0,"   -21,297","   -21,297",Above  * contracts filled * contract multiplier
 Exec DAct Vol,     0.00%,    18.19%,    18.19%,Implied volatility of Exec DAct Arr Mid Px at Arrival Mid
 DAct Slip Arr Mid Vol,     0.00%,    -0.04%,    -0.04%,Implied volatility of DTheo Slip Arr Mid Px at Arrival Mid
 DAct Slip Arr Mark Vol,     0.00%,    -0.04%,    -0.04%,Implied volatility of DTheo Slip Arr Mark Px at Arrival Mid
+DAct Slip Qwap Vol,     0.00%,    -0.04%,    -0.04%,Implied volatility of DTheo Slip Qwap Px at Qwap U

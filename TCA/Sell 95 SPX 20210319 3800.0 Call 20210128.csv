@@ -4,7 +4,7 @@ Arrival Mark,      0.00,    114.79,    114.79,SR Mark at order creation
 Arrival U Mid,      0.00,   3780.69,   3780.69,Mid of underlying at order creation
 Arrival Mid Vol,     0.00%,    22.80%,    22.80%,Implied volatility of Arrival Mid at Arrival U Mid
 Arrival Mark Vol,     0.00%,    22.77%,    22.77%,Implied volatility of Arrival Mark at Arrival U Mid
-Qwap,      0.00,    118.27,    118.27,SR-calculated Qwap
+Qwap,      0.00,    118.27,    118.27,SR-calculated Qwap (or Vwap for a stock only order)
 Qwap U,      0.00,   3785.98,   3785.98,SR-calculated Qwap for underlying price
 Qwap Vol,     0.00%,    22.94%,    22.94%,Implied volatility of Qwap at Qwap U
 Delta,        0%,       47%,       47%,Option Contract Delta
@@ -20,7 +20,7 @@ Slip Arr Mid Px,      0.00,      1.84,      1.84,Amount by which Exec Px was mor
 Slip Arr Mid USD,         0,"    17,525","    17,525",Above  * contracts filled * contract multiplier
 Slip Arr Mark Px,      0.00,      2.00,      2.00,Amount by which Exec Px was more favorable than SR mark at order creation
 Slip Arr Mark USD,         0,"    19,003","    19,003",Above  * contracts filled * contract multiplier
-Slip Qwap Px,      0.00,     -1.47,     -1.47,Amount by which Exec Px was more favorable than the above price
+Slip Qwap Px,      0.00,     -1.47,     -1.47,Amount by which Exec Px was more favorable than Qwap
 Slip Qwap USD,         0,"   -13,996","   -13,996",Above  * contracts filled * contract multiplier
 Theo U Mid,      0.00,   3781.56,   3781.56,Average underlying price if hedging mid-market each fill time
 Exec DTheo Arr Mid Px,      0.00,    116.38,    116.38,Exec Px delta-adjusted from Theo U Mid to Arrival Mid

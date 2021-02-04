@@ -1,0 +1,14 @@
+,Maker,Taker,Total,Desc
+Arrival Mid,     62.52,     62.52,     62.52,Mid at order creation
+Qwap,     62.63,     62.63,     62.63,SR-calculated Qwap (or Vwap for a stock only order)
+Child Orders,         1,       148,       149,Number of child orders which had fills
+Avg Child Size,       146,       107,       107,Avg size of child orders which had fills
+Filled Ctr,       146,"    15,819","    15,965",Total number of contracts filled
+Ctr Fill Rate,      100%,      100%,      100%,Filled Contracts divided by total size sent by child orders which had fills
+Avg Fill Pct Spread,     0.01%,     0.29%,     0.29%,0% means fill is on bid at fill time; 100% means offer
+Exec Px,     62.55,     62.63,     62.63,Average filled price
+Px Range,      0.00,      0.28,      0.28,High minus low fill price
+Slip Arr Mid Px,      0.03,      0.10,      0.10,Amount by which Exec Px was more favorable than mid at order creation
+Slip Arr Mid USD,         4,"     1,657","     1,660",Above  * contracts filled * contract multiplier
+Slip Qwap Px,     -0.08,      0.00,      0.00,Amount by which Exec Px was more favorable than Qwap
+Slip Qwap USD,       -11,        32,        21,Above  * contracts filled * contract multiplier

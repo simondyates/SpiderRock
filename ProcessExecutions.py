@@ -348,7 +348,7 @@ def process_day_TCA(dt):
                 # Task for tomorrow ...
                 fills = dayFills[dayFills['baseParentNumber'] == stock]
                 results = calc_option_TCA_metrics(fills)
-                fName = make_title(fills) + '_tmp.csv'
+                fName = make_title(fills) + '.csv'
                 results.to_csv(os.path.join(os.getcwd(), 'TCA', fName))
                 wins += 1
 

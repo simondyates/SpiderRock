@@ -1,6 +1,7 @@
 from getpass import getpass
 from mysql.connector import connect, Error
 import pandas as pd
+import os
 
 try:
     with connect(
@@ -28,8 +29,9 @@ try:
             cols = [c[0] for c in cursor.fetchall()]
             cursor.execute(ticket_row_query)
             ticket = pd.DataFrame(cursor.fetchall(), columns=cols)
-        fills.to_csv(f'./FillData/Trades{pd.Timestamp.now():%Y%m%d}.csv')
-        qwap.to_csv(f'./FillData/BrkrState{pd.Timestamp.now():%Y%m%d}.csv')
-        ticket.to_csv(f'./FillData/BrkrDetail{pd.Timestamp.now():%Y%m%d}.csv')
+        saveDir = os.path.join(os.getcwd(), 'FillData')
+        fills.to_csv(os.path.join(saveDir, f'Trades{pd.Timestamp.now():%Y%m%d}.csv'))
+        qwap.to_csv(os.path.join(saveDir, f'BrkrState{pd.Timestamp.now():%Y%m%d}.csv'))
+        ticket.to_csv(os.path.join(saveDir, f'BrkrDetail{pd.Timestamp.now():%Y%m%d}.csv'))
 except Error as e:
     print(e)

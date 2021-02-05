@@ -2,7 +2,7 @@ import pandas as pd
 from SRUtils import process_time_cols, format_df, make_title, find_first_file
 import os
 
-def calc_option_TCA_metrics(df, qwap=None, qwapU=None, arrActSlipPct=None, formatted=True):
+def calc_TCA_metrics(df, qwap=None, qwapU=None, arrActSlipPct=None, formatted=True):
     """Returns a dataframe of TCA metrics for an option or stock order on SpiderRock
 
     The are three broad classes of TCA returned.  The first is raw stats on execution price vs. arrival
@@ -17,7 +17,7 @@ def calc_option_TCA_metrics(df, qwap=None, qwapU=None, arrActSlipPct=None, forma
     qwap : float, optional
         SR's estimated QWAP for the option, from msgsrparentbrkrstate (default is None)
     qwapU : float, optional
-        SR's estimated QWAP for the option underlying, from msgsrparentbrkrstate(default is None)
+        SR's estimated QWAP for the option underlying, from msgsrparentbrkrstate (default is None)
     arrActSlipPct: float, optional
         The % difference between the hedge's average price and its mid at the time of first fill (default is None)
     formatted: bool, optional
@@ -26,7 +26,7 @@ def calc_option_TCA_metrics(df, qwap=None, qwapU=None, arrActSlipPct=None, forma
     Returns
     -------
     pandas.core.frame.DataFrame
-        A dataframe indexed of TCA stats, separating Making and Taking trades and providing field descriptions
+        A dataframe indexed by TCA stats, separating Making and Taking trades and providing field descriptions
     """
 
     # Build results df so as to put variable definitions at start
@@ -337,7 +337,7 @@ def process_day_TCA(dt):
                 else:
                     qwap = qwapU = None
                 fills = dayFills[dayFills['baseParentNumber'] == opt]
-                results = calc_option_TCA_metrics(fills, qwap, qwapU, arrActSlipPct, formatted=True)
+                results = calc_TCA_metrics(fills, qwap, qwapU, arrActSlipPct)
                 fName = make_title(fills) + '.csv'
                 results.to_csv(os.path.join(os.getcwd(), 'TCA', fName))
                 wins += 1
@@ -353,7 +353,7 @@ def process_day_TCA(dt):
                     if brkr.shape[0] > 0:
                         qwap = brkr.loc[brkr.index[0], 'brokerVwapMark']
                 fills = dayFills[dayFills['baseParentNumber'] == stock]
-                results = calc_option_TCA_metrics(fills, qwap)
+                results = calc_TCA_metrics(fills, qwap)
                 fName = make_title(fills) + '.csv'
                 results.to_csv(os.path.join(os.getcwd(), 'TCA', fName))
                 wins += 1

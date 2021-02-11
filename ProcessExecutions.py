@@ -296,7 +296,7 @@ def process_day_TCA(dt):
 
     Parameters
     ----------
-    dt : datatime.date (or anything richer than that)
+    dt : datetime.date (or anything richer than that)
             The trade date to process
 
     Returns

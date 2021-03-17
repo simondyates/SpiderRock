@@ -67,12 +67,15 @@ def make_title(df):
     # Returns a descriptive title for the order
     title1 = f"{df['orderSide'].iloc[0]} {df['fillQuantity'].sum()} {df['secKey_tk'].iloc[0]} "
     title2 = f"{df['secKey_yr'].iloc[0]}{df['secKey_mn'].iloc[0]:02}{df['secKey_dy'].iloc[0]} "
-    title3 = f"{df['secKey_xx'].iloc[0]} {df['secKey_cp'].iloc[0]} "
-    title4 = f"{df['parentDttm'].iloc[0]:%Y%m%d}"
-    if df['secKey_mn'].iloc[0] > 0:
-        title = title1 + title2 + title3 + title4
+    strike = df['secKey_xx'].iloc[0]
+    if strike == int(strike):
+        title3 = f"{df['secKey_xx'].iloc[0]:.0f} "
     else:
-        title = title1 + title4
+        title3 = f"{df['secKey_xx'].iloc[0]:.2f} "
+    title4 = f"{df['secKey_cp'].iloc[0]} "
+    title = title1
+    if df['secKey_mn'].iloc[0] > 0:
+        title += title2 + title3 + title4
     return title
 
 

@@ -334,6 +334,8 @@ def process_day_TCA(dt):
                     if brkr.shape[0] > 0:
                         qwap = brkr.loc[brkr.index[0], 'brokerQwapMark']
                         qwapU = brkr.loc[brkr.index[0], 'brokerQwapUMark']
+                    else:
+                        qwap = qwapU = None
                 else:
                     qwap = qwapU = None
                 fills = dayFills[dayFills['baseParentNumber'] == opt]
@@ -362,5 +364,5 @@ def process_day_TCA(dt):
 
 
 if __name__ == '__main__':
-    dt = pd.to_datetime('20210122')
+    dt = pd.to_datetime('20210312')
     wins = process_day_TCA(dt)

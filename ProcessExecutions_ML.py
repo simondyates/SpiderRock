@@ -1,3 +1,5 @@
+# Amended version of ProcessExecutions.py to handle multi-leg orders
+# This code *should* also work for single-leg orders but I haven't tested that yet
 
 import pandas as pd
 from SRUtils import process_time_cols, format_df, make_title, find_first_file
@@ -374,20 +376,44 @@ def process_day_TCA(dt):
                             'secKey_cp']
                     fills['optName'] = fills[keyCols].apply(get_opt_name, axis=1)
 
+                    # Prepare to calculate and combine the results across legs
+                    # Default behaviour will be to combine results in a side/qty weighted sum
+                    # However, this row will be ignored
+                    ig_rows = ['Order']
+                    # and these rows will be qty weighted only
+                    sum_rows = ['Slip Arr Mid Px',
+                                'Slip Arr Mid USD',
+                                'Slip Arr Mark Px',
+                                'Slip Arr Mark USD',
+                                'DTheo Slip Arr Mid Px',
+                                'DTheo Slip Arr Mid USD',
+                                'DTheo Slip Arr Mark Px',
+                                'DTheo Slip Arr Mid Vol',
+                                'DTheo Slip Arr Mark Vol',
+                                'DTheo Slip Arr Mark USD',
+                                'DAct Slip Arr Mid Px',
+                                'DAct Slip Arr Mid USD',
+                                'DAct Slip Arr Mark Px',
+                                'DAct Slip Arr Mark USD',
+                                'DAct Slip Arr Mid Vol',
+                                'DAct Slip Arr Mark Vol',
+                                ]
+                    # and these rows will simply return max()
+                    max_rows = ['Arrival U Mid',
+                                'Child Orders',
+                                'Avg Child Size',
+                                'Filled Ctr',
+                                'Ctr Fill Rate',
+                                'Px Range',
+                                'Theo U Mid',
+                                'DTheo Px Range',
+                                'DTheo Vol Range',
+                                'Act U Mid']
+
                     opt_str = ''
                     sum_results = None
-                    no_sum = ['Order',
-                              'Arrival U Mid',
-                              'Child Orders',
-                              'Avg Child Size',
-                              'Filled Ctr',
-                              'Ctr Fill Rate',
-                              'Px Range',
-                              'Theo U Mid',
-                              'DTheo Px Range',
-                              'DTheo Vol Range',
-                              'Act U Mid']
                     min_qty = float('inf')
+                    val_cols = ['Maker', 'Taker', 'Total']
 
                     for i, leg in enumerate(fills['optName'].unique()):
                         legFills = fills[fills['optName'] == leg]
@@ -403,10 +429,18 @@ def process_day_TCA(dt):
                         opt_str += make_title(legFills) + ' '
                         if sum_results is None:
                             sum_results = results.copy()
-                            sum_results.loc[~sum_results.index.isin(no_sum), ['Maker', 'Taker', 'Total']] = 0
+                            sum_results[['Maker', 'Taker', 'Total']] = 0
 
-                        sum_results.loc[~sum_results.index.isin(no_sum), ['Maker', 'Taker', 'Total']] += \
-                            results.loc[~sum_results.index.isin(no_sum), ['Maker', 'Taker', 'Total']] * mult
+                        sum_results.loc[~sum_results.index.isin(ig_rows+sum_rows+max_rows), val_cols] += \
+                            results.loc[~sum_results.index.isin(ig_rows+sum_rows+max_rows), val_cols] * mult
+
+                        sum_results.loc[sum_results.index.isin(sum_rows), val_cols] += \
+                            results.loc[sum_results.index.isin(sum_rows), val_cols] * qty
+
+                        for col in val_cols:
+                            tdf = pd.concat([sum_results.loc[sum_results.index.isin(max_rows), col],
+                                             results.loc[sum_results.index.isin(max_rows), col]], axis=1)
+                            sum_results.loc[sum_results.index.isin(max_rows), col] = tdf.apply(max, axis=1)
 
                         # Then format and save
                         fName = f'{dt:%Y%m%d} {opt % 100000}-{i+1}.csv'
@@ -414,7 +448,7 @@ def process_day_TCA(dt):
                         results.to_csv(os.path.join(os.getcwd(), 'TCA', fName))
                         wins += 1
 
-                    sum_results.loc[~sum_results.index.isin(no_sum), ['Maker', 'Taker', 'Total']] /= min_qty
+                    sum_results.loc[~sum_results.index.isin(max_rows), val_cols] /= min_qty
                     sum_results.iloc[0, 3] = opt_str
                     fName = f'{dt:%Y%m%d} {opt % 100000}-Cons.csv'
                     sum_results = format_df(sum_results, format_dict)

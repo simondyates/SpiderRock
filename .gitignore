@@ -2,5 +2,6 @@
 **/.ipynb_checkpoints
 **/rsconnect
 **/__pycache__
+**/venv
 *.ipynb
 scratch.py

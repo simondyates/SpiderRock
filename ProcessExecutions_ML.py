@@ -475,5 +475,5 @@ def process_day_TCA(dt):
 
 
 if __name__ == '__main__':
-    dt = pd.to_datetime('20210312')
+    dt = pd.to_datetime('20210407')
     wins = process_day_TCA(dt)

@@ -1,0 +1,31 @@
+,Maker,Taker,Total,Desc
+Order,,,,Buy 1000 SPX 20210416 3920 Call 
+Arrival Mid,     65.70,      0.00,     65.70,Mid at first available time
+Arrival Mark,     65.78,      0.00,     65.78,SR Mark at first available time
+Arrival U Mid,   3920.01,      0.00,   3920.01,Mid of underlying at first available time
+Arrival Mid Vol,    15.80%,     0.00%,    15.80%,Implied volatility of Arrival Mid at Arrival U Mid
+Arrival Mark Vol,    15.82%,     0.00%,    15.82%,Implied volatility of Arrival Mark at Arrival U Mid
+Delta,       50%,        0%,       50%,Option Contract Delta
+Vega,      4.24,      0.00,      4.24,Option Contract Vega
+Child Orders,        11,         0,        11,Number of child orders which had fills
+Avg Child Size,       167,         0,       167,Avg size of child orders which had fills
+Filled Ctr,"     1,000",         0,"     1,000",Total number of contracts filled
+Ctr Fill Rate,       54%,        0%,       54%,Filled Contracts divided by total size sent by child orders which had fills
+Avg Fill Pct Spread,   108.18%,     0.00%,   108.18%,0% means fill is on bid at fill time; 100% means offer
+Exec Px,     67.75,      0.00,     67.75,Average filled price
+Px Range,      2.30,      0.00,      2.30,High minus low fill price
+Slip Arr Mid Px,     -2.05,      0.00,     -2.05,Amount by which Exec Px was more favorable than mid at order creation
+Slip Arr Mid USD,"  -204,732",         0,"  -204,732",Above  * contracts filled * contract multiplier
+Slip Arr Mark Px,     -1.97,      0.00,     -1.97,Amount by which Exec Px was more favorable than SR mark at order creation
+Slip Arr Mark USD,"  -197,170",         0,"  -197,170",Above  * contracts filled * contract multiplier
+Theo U Mid,   3923.92,      0.00,   3923.92,Average underlying price if hedging mid-market each fill time
+Exec DTheo Arr Mid Px,     65.79,      0.00,     65.79,Exec Px delta-adjusted from Theo U Mid to Arrival Mid
+DTheo Px Range,      0.54,      0.00,      0.54,High minus low delta-adjusted fill price
+DTheo Slip Arr Mid Px,     -0.09,      0.00,     -0.09,Amount by which Exec DTheo Arr Mid Px was more favorable than Arrival Mid
+DTheo Slip Arr Mid USD,"    -8,551",         0,"    -8,551",Above  * contracts filled * contract multiplier
+DTheo Slip Arr Mark Px,     -0.01,      0.00,     -0.01,Amount by which Exec DTheo Arr Mid Px was more favorable than Arrival Mark
+DTheo Slip Arr Mark USD,      -988,         0,      -988,Above  * contracts filled * contract multiplier
+Exec DTheo Vol,    15.82%,     0.00%,    15.82%,Implied volatility of Exec DTheo Arr Mid Px at Arrival Mid
+DTheo Vol Range,     0.13%,     0.00%,     0.13%,High minus low vol
+DTheo Slip Arr Mid Vol,    -0.02%,     0.00%,    -0.02%,Implied volatility of DTheo Slip Arr Mid Px at Arrival Mid
+DTheo Slip Arr Mark Vol,    -0.00%,     0.00%,    -0.00%,Implied volatility of DTheo Slip Arr Mark Px at Arrival Mid

@@ -30,9 +30,10 @@ try:
             cursor.execute(ticket_row_query)
             ticket = pd.DataFrame(cursor.fetchall(), columns=cols)
         saveDir = os.path.join(os.getcwd(), 'FillData')
-        fills.to_csv(os.path.join(saveDir, f'Trades{pd.Timestamp.now():%Y%m%d}.csv'))
-        qwap.to_csv(os.path.join(saveDir, f'BrkrState{pd.Timestamp.now():%Y%m%d}.csv'))
-        ticket.to_csv(os.path.join(saveDir, f'BrkrDetail{pd.Timestamp.now():%Y%m%d}.csv'))
+        t = pd.Timestamp.now()
+        fills.to_csv(os.path.join(saveDir, f'Trades{t:%Y%m%d}.csv'))
+        qwap.to_csv(os.path.join(saveDir, f'BrkrState{t:%Y%m%d}.csv'))
+        ticket.to_csv(os.path.join(saveDir, f'BrkrDetail{t:%Y%m%d}.csv'))
 except Error as e:
     print(e)
     
